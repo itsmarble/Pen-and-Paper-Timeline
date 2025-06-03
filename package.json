@@ -1,0 +1,94 @@
+{
+  "name": "pen-paper-timeline",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "homepage": "./",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "electron": "electron .",
+    "electron-dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "build-electron": "npm run build && electron-builder",
+    "build-mac": "npm run build && electron-builder --mac",
+    "dist": "npm run build && electron-builder --publish=never"
+  },
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.1.7",
+    "fuse.js": "^7.1.0",
+    "lucide-react": "^0.511.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.25.0",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vitejs/plugin-react": "^4.4.1",
+    "autoprefixer": "^10.4.21",
+    "concurrently": "^8.2.2",
+    "electron": "^36.3.2",
+    "electron-builder": "^26.0.12",
+    "eslint": "^9.25.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^16.0.0",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.1.7",
+    "vite": "^6.3.5",
+    "wait-on": "^8.0.3"
+  },
+  "build": {
+    "appId": "com.maxbohn.pen-paper-timeline",
+    "productName": "Pen & Paper Timeline",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "node_modules/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.icns",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "dmg": {
+      "title": "Pen & Paper Timeline",
+      "icon": "build/icon.icns",
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

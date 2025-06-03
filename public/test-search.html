@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Search Test</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui; margin: 40px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .test-result { background: white; padding: 20px; margin: 15px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .success { border-left: 4px solid #10b981; }
+        .info { border-left: 4px solid #3b82f6; }
+        .warning { border-left: 4px solid #f59e0b; }
+        h1 { color: #1f2937; }
+        h2 { color: #374151; margin-top: 0; }
+        .score { font-weight: bold; color: #059669; }
+        .query { font-family: monospace; background: #f3f4f6; padding: 2px 6px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Enhanced Search Functionality Test</h1>
+        
+        <div class="test-result info">
+            <h2>Test Setup</h2>
+            <p>Testing the enhanced search functionality with real pen-paper-timeline data.</p>
+        </div>
+        
+        <div id="test-results"></div>
+    </div>
+
+    <script type="module">
+        // Import the enhanced search functionality
+        import { EventCollection } from '/src/utils/eventUtils.js';
+        
+        // Sample test data similar to the pen-paper-timeline format
+        const testEvents = [
+            {
+                id: 1,
+                name: "Ankunft in Bergheim",
+                entry_date: "2024-03-15",
+                entry_time: "14:30",
+                description: "Nach langer Reise erreichen wir endlich die Stadt Bergheim. Die Stadtmauern sind beeindruckend und die Wachen freundlich.",
+                tags: ["reise", "ankunft"],
+                location: "Bergheim"
+            },
+            {
+                id: 2,
+                name: "Gespräch mit dem Schmied",
+                entry_date: "2024-03-15",
+                entry_time: "18:00",
+                description: "Treffen mit dem Schmied Thorek in der Taverne. Er erzählt uns von den alten Ruinen im Nordwald.",
+                tags: ["npc", "quest", "information"],
+                location: "Goldene Krone Taverne"
+            },
+            {
+                id: 3,
+                name: "Goblin-Angriff in der Ruine",
+                entry_date: "2024-03-16",
+                entry_time: "10:15",
+                description: "Wir werden von einer Gruppe Goblins überrascht. Der Kampf ist heftig, aber wir können sie zurückschlagen.",
+                tags: ["kampf", "goblins", "gefahr"],
+                location: "Alte Ruinen"
+            },
+            {
+                id: 4,
+                name: "Rettung der Prinzessin",
+                entry_date: "2024-03-17",
+                entry_time: "09:15",
+                description: "Die entführte Prinzessin wurde aus dem Turm des bösen Zauberers befreit.",
+                tags: ["rettung", "prinzessin", "zauberer"],
+                location: "Zaubererturm"
+            },
+            {
+                id: 5,
+                name: "Handel mit Zwergen",
+                entry_date: "2024-03-18",
+                entry_time: "16:45",
+                description: "Erfolgreicher Handel mit den Zwergen-Händlern. Wir tauschen Erze gegen magische Gegenstände.",
+                tags: ["handel", "zwerge", "magie"],
+                location: "Zwergensiedlung"
+            }
+        ];
+
+        // Initialize the event collection
+        const eventCollection = new EventCollection(testEvents);
+        const resultsContainer = document.getElementById('test-results');
+
+        function addTestResult(title, query, results, explanation, type = 'success') {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            
+            let resultsList = '';
+            if (results && results.length > 0) {
+                resultsList = results.map(event => 
+                    `<li>${event.name} ${event.searchScore ? `<span class="score">(Score: ${event.searchScore.toFixed(3)})</span>` : ''}</li>`
+                ).join('');
+            }
+            
+            div.innerHTML = `
+                <h2>${title}</h2>
+                <p><strong>Query:</strong> <span class="query">${query}</span></p>
+                <p><strong>Results:</strong> ${results ? results.length : 0} found</p>
+                ${resultsList ? `<ul>${resultsList}</ul>` : ''}
+                <p><em>${explanation}</em></p>
+            `;
+            
+            resultsContainer.appendChild(div);
+        }
+
+        // Run tests
+        console.log("🧪 Starting Enhanced Search Tests...");
+
+        // Test 1: Exact search
+        const exactResults = eventCollection.search("Goblin-Angriff");
+        addTestResult(
+            "1. Exact Search Test", 
+            "Goblin-Angriff", 
+            exactResults,
+            "Should find exact matches with high scores."
+        );
+
+        // Test 2: Fuzzy search with typos
+        const fuzzyResults = eventCollection.search("Gobblin Angrif");
+        addTestResult(
+            "2. Fuzzy Search Test (Typos)", 
+            "Gobblin Angrif", 
+            fuzzyResults,
+            "Tests Levenshtein distance and fuzzy matching capabilities."
+        );
+
+        // Test 3: Partial word search
+        const partialResults = eventCollection.search("Prinz");
+        addTestResult(
+            "3. Partial Word Search", 
+            "Prinz", 
+            partialResults,
+            "Should find 'Prinzessin' using partial word matching."
+        );
+
+        // Test 4: German character normalization
+        const germanResults = eventCollection.search("Haendler");
+        addTestResult(
+            "4. German Character Normalization", 
+            "Haendler", 
+            germanResults,
+            "Should find 'Händler' by normalizing 'ae' to 'ä'."
+        );
+
+        // Test 5: Multi-field search
+        const multiResults = eventCollection.search("Zauberer Turm");
+        addTestResult(
+            "5. Multi-field Search", 
+            "Zauberer Turm", 
+            multiResults,
+            "Searches across name, description, location, and tags."
+        );
+
+        // Test 6: Tag search
+        const tagResults = eventCollection.search("", ["kampf"]);
+        addTestResult(
+            "6. Tag-based Search", 
+            'Tag: "kampf"', 
+            tagResults,
+            "Filters events by specific tags."
+        );
+
+        // Test 7: Soundex matching
+        const soundexResults = eventCollection.search("Schmit");
+        addTestResult(
+            "7. Soundex Phonetic Matching", 
+            "Schmit", 
+            soundexResults,
+            "Should find 'Schmied' using phonetic similarity."
+        );
+
+        // Test 8: Search suggestions
+        const suggestions = eventCollection.getSearchSuggestions("Gob", 3);
+        addTestResult(
+            "8. Search Suggestions", 
+            "Gob", 
+            null,
+            `Suggestions: ${suggestions.join(", ") || "None"} - Provides autocomplete suggestions.`,
+            'info'
+        );
+
+        // Test 9: Search analytics
+        const analytics = eventCollection.getSearchAnalytics();
+        addTestResult(
+            "9. Search Analytics", 
+            "System Analysis", 
+            null,
+            `Total events: ${analytics.totalEvents}, Unique terms: ${analytics.totalUniqueTerms}, Most common: ${analytics.mostCommonTerms.slice(0, 3).join(", ")}`,
+            'info'
+        );
+
+        // Test 10: Empty search handling
+        const emptyResults = eventCollection.search("");
+        addTestResult(
+            "10. Empty Search Handling", 
+            '""', 
+            emptyResults,
+            `Returns ${emptyResults.length} events (should return all events when search is empty).`
+        );
+
+        console.log("✅ All search tests completed!");
+    </script>
+</body>
+</html>

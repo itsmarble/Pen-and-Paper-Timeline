@@ -1,0 +1,112 @@
+{
+  "version": "2.0",
+  "created_at": "2025-05-29T12:00:00.000Z",
+  "metadata": {
+    "total_events": 7,
+    "tags": ["abenteuer", "ankunft", "arena", "erfolgn", "erkundung", "fest", "gefahr", "goblins", "information", "kampf", "neue-stadt", "npc", "quest", "reise", "ruine", "schatz", "turnier"],
+    "date_range": {
+      "start": "2024-03-15",
+      "end": "2024-05-15"
+    }
+  },
+  "events": [
+    {
+      "id": 1,
+      "name": "Ankunft in Bergheim",
+      "description": "Nach langer Reise erreichen wir endlich die Stadt Bergheim. Die Stadtmauern sind beeindruckend und die Wachen freundlich. Wir suchen uns eine Unterkunft für die Nacht.",
+      "entry_date": "2024-03-15",
+      "entry_time": "14:30",
+      "end_date": "",
+      "end_time": "",
+      "hasEndDateTime": false,
+      "location": "Bergheim",
+      "tags": ["reise", "ankunft"],
+      "created_at": "2025-05-29T12:00:00.000Z",
+      "updated_at": "2025-05-29T12:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "name": "Gespräch mit dem Schmied",
+      "description": "Treffen mit dem Schmied Thorek in der Taverne. Er erzählt uns von den alten Ruinen im Nordwald und warnt vor den Gefahren. Das Gespräch dauert bis spät in die Nacht - er scheint mehr zu wissen, als er preisgibt.",
+      "entry_date": "2024-03-15",
+      "entry_time": "18:00",
+      "end_date": "2024-03-15",
+      "end_time": "22:30",
+      "hasEndDateTime": true,
+      "location": "Goldene Krone Taverne",
+      "tags": ["npc", "quest", "information"],
+      "created_at": "2025-05-29T12:00:00.000Z",
+      "updated_at": "2025-05-29T12:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "name": "Aufbruch zum Nordwald",
+      "description": "Mit ersten Sonnenstrahlen brechen wir zur Ruine im Nordwald auf. Der Weg führt durch dichtes Unterholz und wird zunehmend schwieriger. Alte Steinpfade deuten auf vergangene Zivilisation hin.",
+      "entry_date": "2024-03-16",
+      "entry_time": "09:00",
+      "end_date": "",
+      "end_time": "",
+      "hasEndDateTime": false,
+      "location": "Nordwald",
+      "tags": ["reise", "abenteuer", "erkundung"],
+      "created_at": "2025-05-29T12:00:00.000Z",
+      "updated_at": "2025-05-29T12:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "name": "Goblin-Angriff in der Ruine",
+      "description": "Beim Erkunden der alten Ruine werden wir von einer Goblin-Bande angegriffen. Der Kampf ist heftig, aber wir können sie erfolgreich zurückschlagen. Zwei Goblins fliehen in die Tiefen der Ruine.",
+      "entry_date": "2024-03-16",
+      "entry_time": "15:45",
+      "end_date": "2024-03-16",
+      "end_time": "17:15",
+      "hasEndDateTime": true,
+      "location": "Alte Ruine",
+      "tags": ["kampf", "goblins", "ruine"],
+      "created_at": "2025-05-29T12:00:00.000Z",
+      "updated_at": "2025-05-29T12:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "name": "Triumphale Rückkehr",
+      "description": "Rückkehr nach Bergheim mit einem wertvollen Schatz aus der Ruine. Die Stadtbewohner sind beeindruckt von unseren Taten. Der Schmied nickt wissend - er hatte wohl recht mit seinen Andeutungen.",
+      "entry_date": "2024-03-17",
+      "entry_time": "12:00",
+      "end_date": "",
+      "end_time": "",
+      "hasEndDateTime": false,
+      "location": "Bergheim",
+      "tags": ["reise", "schatz", "erfolg"],
+      "created_at": "2025-05-29T12:00:00.000Z",
+      "updated_at": "2025-05-29T12:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "name": "Gefährliche Reise nach Steinbrücke",
+      "description": "Mehrtägige Reise nach Steinbrücke durch gefährliche Gebiete. Übernachtung in verlassenen Ruinen, Begegnungen mit Räubern und wilden Tieren. Die neue Stadt empfängt uns mit hohen Türmen und geschäftigen Märkten.",
+      "entry_date": "2024-04-02",
+      "entry_time": "10:30",
+      "end_date": "2024-04-05",
+      "end_time": "16:00",
+      "hasEndDateTime": true,
+      "location": "Steinbrücke",
+      "tags": ["reise", "neue-stadt", "gefahr", "abenteuer"],
+      "created_at": "2025-05-29T12:00:00.000Z",
+      "updated_at": "2025-05-29T12:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "name": "Großes Arena-Turnier",
+      "description": "Teilnahme am großen Turnier in der Arena von Steinbrücke. Kämpfe gegen erfahrene Krieger aus allen Landen. Das Publikum jubelt, die Stimmung ist elektrisierend. Ein wahres Fest der Kampfkunst.",
+      "entry_date": "2024-05-15",
+      "entry_time": "08:00",
+      "end_date": "2024-05-15",
+      "end_time": "20:00",
+      "hasEndDateTime": true,
+      "location": "Arena von Steinbrücke",
+      "tags": ["turnier", "kampf", "fest", "arena"],
+      "created_at": "2025-05-29T12:00:00.000Z",
+      "updated_at": "2025-05-29T12:00:00.000Z"
+    }
+  ]
+}
