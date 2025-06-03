@@ -6,6 +6,13 @@ A beautiful, modern timeline management application designed specifically for Du
 
 ## ✨ Features
 
+### 🔍 Advanced Search & Intelligence
+- **Fuzzy Search**: Finds events even with typos (e.g., "Gobblin" finds "Goblin")
+- **German Language Support**: Full ä/ö/ü/ß normalization and matching
+- **Multi-Algorithm Scoring**: Jaro-Winkler, Levenshtein, phonetic matching
+- **Smart Tokenization**: Handles compound words and partial matches
+- **Real-Time Analytics**: Performance metrics and search insights
+
 ### 🎯 Enhanced Navigation
 - **Time Unit Navigation**: Jump by years, months, days, or hours
 - **Labeled Buttons**: Clear "Jahr", "Monat", "Tag", "Std" labels instead of just chevrons
@@ -25,6 +32,12 @@ A beautiful, modern timeline management application designed specifically for Du
 - **Duration Display**: Shows "2d 5h" or "3h 45m" format
 - **Range Validation**: Ensures end time is after start time
 - **Visual Differentiation**: Dashed borders for range events
+
+### 📊 Data Management
+- **Import/Export**: Support for various campaign log formats including Campaign Log v4
+- **Automatic Backups**: Data safety with timestamped backups
+- **Migration Tools**: Seamless data format upgrades
+- **Persistent Storage**: Data saved securely in Electron app
 
 ### 🎨 Modern UI
 - **Dark/Light Mode**: Toggle between themes
@@ -106,7 +119,33 @@ npm run build
 - **Vite 6.3**: Lightning-fast development
 - **TailwindCSS 4.1**: Utility-first styling
 - **Lucide React**: Beautiful icon library
-- **Local Storage**: Browser-based persistence
+- **Electron**: Cross-platform desktop application
+- **Fuse.js**: Advanced fuzzy search capabilities
+
+## 📁 Project Structure
+
+```
+pen-paper-timeline/
+├── src/                      # Main application source
+│   ├── components/           # React components
+│   │   ├── Timeline.jsx      # Main timeline component
+│   │   ├── EventCard.jsx     # Individual event display
+│   │   ├── EditEventForm.jsx # Event creation/editing
+│   │   └── ...              # Other components
+│   ├── utils/               # Utility functions
+│   │   ├── eventUtils.js    # Event processing & search
+│   │   ├── migrationUtils.js # Data import/export
+│   │   └── ...              # Other utilities
+│   ├── data/                # Local data storage
+│   └── assets/              # Static assets
+├── electron/                # Electron configuration
+│   ├── main.cjs            # Main process
+│   └── preload.cjs         # Preload script
+├── build/                   # Build resources
+│   └── icon.icns           # App icon
+├── public/                  # Public web assets
+└── dist/                   # Build output (generated)
+```
 
 ## 📱 Responsive Design
 
@@ -138,21 +177,6 @@ npm run build
 
 # Preview production build
 npm run preview
-```
-
-## 📂 Project Structure
-
-```
-src/
-├── components/
-│   ├── Timeline.jsx          # Main timeline component
-│   ├── EventCard.jsx         # Individual event display
-│   ├── EditEventForm.jsx     # Event editing modal
-│   └── DateTimePicker.jsx    # Custom date/time picker
-├── data/
-│   └── events.json          # Sample events data
-└── styles/
-    └── index.css            # Global styles and scrollbars
 ```
 
 ## 🎯 Perfect For
