@@ -18,13 +18,9 @@ import {
   Upload,
   Moon,
   Sun,
-  Maximize2,
-  Minimize2,
   Folder,
   ChevronsLeft,
-  ChevronsRight,
-  FastForward,
-  Rewind
+  ChevronsRight
 } from 'lucide-react';
 import { EventCollection, EventValidator, EventFormatter, OptimizedEvent } from '../utils/eventUtils.js';
 import { EventMigration } from '../utils/migrationUtils.js';
@@ -41,7 +37,6 @@ const Timeline = () => {
 
   const [currentGameTime, setCurrentGameTime] = useState(new Date('2024-03-16T12:00:00'));
   const [isEditingTime, setIsEditingTime] = useState(false);
-  const [tempGameTime, setTempGameTime] = useState('');
   const [editingEvent, setEditingEvent] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -59,24 +54,6 @@ const Timeline = () => {
     tags: [],
     hasEndDateTime: false
   });
-
-  // Function to initialize a new event with current game time
-  const initializeNewEvent = useCallback(() => {
-    const gameDate = currentGameTime.toISOString().split('T')[0];
-    const gameTime = currentGameTime.toTimeString().slice(0, 5);
-    
-    setNewEvent({
-      name: '',
-      entry_date: gameDate,
-      entry_time: gameTime,
-      end_date: '',
-      end_time: '',
-      description: '',
-      location: '',
-      tags: [],
-      hasEndDateTime: false
-    });
-  }, [currentGameTime]);
 
   // Load data on mount and set up auto-save
   useEffect(() => {
@@ -114,7 +91,7 @@ const Timeline = () => {
         if (savedTime) {
           try {
             setCurrentGameTime(new Date(savedTime));
-          } catch (e) {
+          } catch {
             console.warn('Could not load saved time');
           }
         }
@@ -137,7 +114,7 @@ const Timeline = () => {
     // Set up menu listeners for Electron
     dataManager.setupMenuListeners({
       onNewEvent: () => setShowAddForm(true),
-      onImportEvents: async (event, filePath) => {
+      onImportEvents: async () => {
         try {
           // Handle import functionality
           setNotification({
@@ -151,7 +128,7 @@ const Timeline = () => {
           });
         }
       },
-      onExportEvents: async (event, filePath) => {
+      onExportEvents: async () => {
         try {
           // Handle export functionality
           setNotification({
@@ -253,11 +230,6 @@ const Timeline = () => {
       if (!startDateTime) return 'unknown';
       
       const status = startDateTime > currentGameTime ? 'future' : 'past';
-      
-      // Debug logging (can be removed later)
-      if (process.env.NODE_ENV === 'development') {
-        console.debug(`Event "${optimizedEvent.name}": ${optimizedEvent.entry_date} ${optimizedEvent.entry_time} -> ${status}`);
-      }
       
       return status;
     } catch (error) {
@@ -526,10 +498,7 @@ const Timeline = () => {
                         Aktuelle Zeit: {currentGameTime.toLocaleDateString('de-DE')} {currentGameTime.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
                       </span>
                       <button
-                        onClick={() => {
-                          setTempGameTime(currentGameTime.toISOString().slice(0, 16));
-                          setIsEditingTime(true);
-                        }}
+                        onClick={() => setIsEditingTime(true)}
                         className={`p-1 rounded transition-colors ${
                           isDarkMode 
                             ? 'text-gray-400 hover:bg-gray-700 hover:text-white'

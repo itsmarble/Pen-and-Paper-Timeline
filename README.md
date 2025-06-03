@@ -120,7 +120,7 @@ npm run build
 - **TailwindCSS 4.1**: Utility-first styling
 - **Lucide React**: Beautiful icon library
 - **Electron**: Cross-platform desktop application
-- **Fuse.js**: Advanced fuzzy search capabilities
+- **Custom Search**: Advanced fuzzy search capabilities
 
 ## 📁 Project Structure
 
@@ -136,8 +136,7 @@ pen-paper-timeline/
 │   │   ├── eventUtils.js    # Event processing & search
 │   │   ├── migrationUtils.js # Data import/export
 │   │   └── ...              # Other utilities
-│   ├── data/                # Local data storage
-│   └── assets/              # Static assets
+│   └── data/                # Local data storage
 ├── electron/                # Electron configuration
 │   ├── main.cjs            # Main process
 │   └── preload.cjs         # Preload script

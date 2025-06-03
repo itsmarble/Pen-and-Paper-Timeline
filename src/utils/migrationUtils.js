@@ -216,7 +216,7 @@ export class EventMigration {
     // Check if any event lacks the optimized structure markers
     return events.some(event => {
       return !(event.created_at && event.updated_at) || 
-             !event.hasOwnProperty('hasEndDateTime') ||
+             !Object.prototype.hasOwnProperty.call(event, 'hasEndDateTime') ||
              typeof event.name === 'undefined' ||
              typeof event.description === 'undefined';
     });

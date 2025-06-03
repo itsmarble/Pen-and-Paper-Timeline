@@ -14,13 +14,10 @@
     "electron-dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
     "build-electron": "npm run build && electron-builder",
     "build-mac": "npm run build && electron-builder --mac",
-    "dist": "npm run build && electron-builder --publish=never",
-    "upgrade": "node upgrade-app.js",
-    "upgrade-shell": "./upgrade-app.sh"
+    "dist": "npm run build && electron-builder --publish=never"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.7",
-    "fuse.js": "^7.1.0",
     "lucide-react": "^0.511.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
