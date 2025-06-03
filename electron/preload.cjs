@@ -24,5 +24,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   // Platform info
   platform: process.platform,
-  isElectron: true
+  isElectron: true,
+
+  // Logging from renderer
+  log: (level, ...args) => ipcRenderer.invoke('renderer-log', level, ...args),
 });
