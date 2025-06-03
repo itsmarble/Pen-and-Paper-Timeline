@@ -507,6 +507,25 @@ export class EventCollection {
     return includeScoring ? scoredEvents : scoredEvents.map(item => item.event);
   }
 
+  // Suggest search terms based on event data
+  getSearchSuggestions(searchTerm, maxResults = 8) {
+    if (!searchTerm || searchTerm.length < 2) return [];
+    const normalized = searchTerm.toLowerCase();
+    const suggestions = new Set();
+    this.events.forEach(event => {
+      const text = event.getSearchableText().combined;
+      text.split(/\s+/).forEach(word => {
+        if (word.length > 1 && word.startsWith(normalized)) {
+          suggestions.add(word);
+        }
+      });
+    });
+    // Return most relevant suggestions, sorted by frequency
+    const suggestionArr = Array.from(suggestions);
+    suggestionArr.sort((a, b) => a.localeCompare(b));
+    return suggestionArr.slice(0, maxResults);
+  }
+
   preprocessSearchTerm(searchTerm) {
     return searchTerm.toLowerCase()
       .replace(/[^\w\s]/g, ' ')

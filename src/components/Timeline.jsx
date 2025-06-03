@@ -204,7 +204,17 @@ const Timeline = () => {
 
   // Search analytics for debugging and optimization
   const searchAnalytics = useMemo(() => {
-    return eventCollection.getSearchAnalytics();
+    // Minimal analytics: count unique terms in all events
+    const termSet = new Set();
+    eventCollection.events.forEach(event => {
+      const text = event.getSearchableText().combined;
+      text.split(/\s+/).forEach(word => {
+        if (word.length > 1) termSet.add(word);
+      });
+    });
+    return {
+      totalUniqueTerms: termSet.size
+    };
   }, [eventCollection]);
 
   // Get all available tags from the optimized collection
@@ -815,7 +825,7 @@ const Timeline = () => {
                           ⚡ Performance
                         </p>
                         <ul className={`space-y-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                          <li>📚 {searchAnalytics.totalEvents} Events indexiert</li>
+                          <li>📚 {filteredAndSortedEvents.length} Events indexiert</li>
                           <li>🔤 {searchAnalytics.totalUniqueTerms} einzigartige Begriffe</li>
                           <li>🎯 Multi-Algorithmus-Scoring</li>
                           <li>🚀 Echtzeit-Suche</li>
@@ -930,139 +940,220 @@ const Timeline = () => {
 
       {/* Add Event Modal */}
       {showAddForm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className={`rounded-2xl shadow-2xl max-w-md w-full p-6 transition-colors duration-300 ${
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className={`rounded-2xl shadow-2xl w-full max-w-md p-6 transition-colors duration-300 border-2 border-blue-400/20 max-h-[90vh] overflow-y-auto ${
             isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'
-          }`}>
+          }`} tabIndex={-1} aria-modal="true" role="dialog">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold">Neues Event hinzufügen</h3>
+              <h3 className="text-2xl font-extrabold tracking-tight flex items-center gap-2">
+                <Plus className="w-6 h-6 text-blue-500" /> Neues Event erstellen
+              </h3>
               <button
                 onClick={() => setShowAddForm(false)}
-                className={`p-2 rounded-lg transition-colors ${
+                className={`p-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
                 }`}
+                aria-label="Schließen"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-4">
-              <DateTimePicker
-                date={newEvent.entry_date}
-                time={newEvent.entry_time}
-                endDate={newEvent.end_date}
-                endTime={newEvent.end_time}
-                hasEndDateTime={newEvent.hasEndDateTime}
-                currentGameTime={currentGameTime}
-                onDateChange={(date) => setNewEvent({...newEvent, entry_date: date})}
-                onTimeChange={(time) => setNewEvent({...newEvent, entry_time: time})}
-                onEndDateChange={(date) => setNewEvent({...newEvent, end_date: date})}
-                onEndTimeChange={(time) => setNewEvent({...newEvent, end_time: time})}
-                onToggleRange={(hasRange) => setNewEvent({...newEvent, hasEndDateTime: hasRange})}
-                isDarkMode={isDarkMode}
-                label="Event-Zeit"
-                required={true}
-              />
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Event-Name *</label>
-                <input
-                  type="text"
-                  value={newEvent.name}
-                  onChange={(e) => setNewEvent({...newEvent, name: e.target.value})}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                    isDarkMode 
-                      ? 'bg-gray-700 border-gray-600 text-white' 
-                      : 'bg-white border-gray-300'
-                  }`}
-                  placeholder="Kurzer, prägnanter Name für das Event"
-                  required
+            <form
+              className="space-y-6"
+              onSubmit={e => { e.preventDefault(); handleAddEvent(); }}
+              autoComplete="off"
+            >
+              <div className="grid grid-cols-1 gap-4">
+                <DateTimePicker
+                  date={newEvent.entry_date}
+                  time={newEvent.entry_time}
+                  endDate={newEvent.end_date}
+                  endTime={newEvent.end_time}
+                  hasEndDateTime={newEvent.hasEndDateTime}
+                  currentGameTime={currentGameTime}
+                  onDateChange={(date) => setNewEvent({...newEvent, entry_date: date})}
+                  onTimeChange={(time) => setNewEvent({...newEvent, entry_time: time})}
+                  onEndDateChange={(date) => setNewEvent({...newEvent, end_date: date})}
+                  onEndTimeChange={(time) => setNewEvent({...newEvent, end_time: time})}
+                  onToggleRange={(hasRange) => setNewEvent({...newEvent, hasEndDateTime: hasRange})}
+                  isDarkMode={isDarkMode}
+                  label="Event-Zeit"
+                  required={true}
                 />
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Beschreibung *</label>
-                <textarea
-                  value={newEvent.description}
-                  onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                    isDarkMode 
-                      ? 'bg-gray-700 border-gray-600 text-white' 
-                      : 'bg-white border-gray-300'
-                  }`}
-                  rows="3"
-                  placeholder="Was passiert in diesem Event?"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Ort</label>
-                <input
-                  type="text"
-                  value={newEvent.location}
-                  onChange={(e) => setNewEvent({...newEvent, location: e.target.value})}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                    isDarkMode 
-                      ? 'bg-gray-700 border-gray-600 text-white' 
-                      : 'bg-white border-gray-300'
-                  }`}
-                  placeholder="Wo findet das Event statt?"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Tags</label>
-                <div className="flex flex-wrap gap-1 mb-2">
-                  {newEvent.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs ${
-                        isDarkMode 
-                          ? 'bg-blue-800/50 text-blue-300 border border-blue-600'
-                          : 'bg-blue-100 text-blue-800 border border-blue-200'
-                      }`}
-                    >
-                      {tag}
-                      <button
-                        onClick={() => removeTagFromNewEvent(tag)}
-                        className="hover:text-red-500 transition-colors"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  ))}
+                <div>
+                  <label className="block text-sm font-semibold mb-1">Event-Name <span className="text-red-500">*</span></label>
+                  <input
+                    type="text"
+                    value={newEvent.name}
+                    onChange={(e) => setNewEvent({...newEvent, name: e.target.value})}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-lg font-medium ${
+                      isDarkMode 
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                        : 'bg-white border-gray-300 placeholder-gray-400'
+                    }`}
+                    placeholder="Kurzer, prägnanter Name für das Event"
+                    required
+                    maxLength={60}
+                  />
+                  {/* Inline error for name */}
+                  {(!newEvent.name || !newEvent.name.trim()) && (
+                    <span className="text-xs text-red-500 mt-1 block">Name ist erforderlich.</span>
+                  )}
                 </div>
-                <button
-                  onClick={addTagToNewEvent}
-                  className={`text-sm transition-colors ${
-                    isDarkMode 
-                      ? 'text-blue-400 hover:text-blue-300'
-                      : 'text-blue-600 hover:text-blue-700'
-                  }`}
-                >
-                  + Tag hinzufügen
-                </button>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-1">Beschreibung <span className="text-red-500">*</span></label>
+                  <textarea
+                    value={newEvent.description}
+                    onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-base ${
+                      isDarkMode 
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                        : 'bg-white border-gray-300 placeholder-gray-400'
+                    }`}
+                    rows="3"
+                    placeholder="Was passiert in diesem Event?"
+                    required
+                  />
+                  {(!newEvent.description || !newEvent.description.trim()) && (
+                    <span className="text-xs text-red-500 mt-1 block">Beschreibung ist erforderlich.</span>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-1">Ort</label>
+                  <input
+                    type="text"
+                    value={newEvent.location}
+                    onChange={(e) => setNewEvent({...newEvent, location: e.target.value})}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-base ${
+                      isDarkMode 
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                        : 'bg-white border-gray-300 placeholder-gray-400'
+                    }`}
+                    placeholder="Wo findet das Event statt?"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-1 flex items-center gap-1">Tags
+                    <span className="text-xs text-gray-400 ml-1">(optional, z.B. Charaktere, Orte, Themen)</span>
+                  </label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {newEvent.tags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border transition-colors ${
+                          isDarkMode 
+                            ? 'bg-blue-800/50 text-blue-200 border-blue-600' 
+                            : 'bg-blue-100 text-blue-800 border-blue-200'
+                        }`}
+                      >
+                        <Tag className="w-3 h-3" />
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => removeTagFromNewEvent(tag)}
+                          className="hover:text-red-500 ml-1 focus:outline-none"
+                          tabIndex={0}
+                          aria-label={`Tag ${tag} entfernen`}
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newEvent._tagInput || ''}
+                      onChange={e => setNewEvent({ ...newEvent, _tagInput: e.target.value })}
+                      onKeyDown={e => {
+                        if ((e.key === 'Enter' || e.key === ',') && newEvent._tagInput?.trim()) {
+                          e.preventDefault();
+                          const tag = newEvent._tagInput.trim();
+                          if (tag && !newEvent.tags.includes(tag)) {
+                            setNewEvent(prev => ({ ...prev, tags: [...prev.tags, tag], _tagInput: '' }));
+                          }
+                        }
+                        if (e.key === 'Backspace' && !newEvent._tagInput && newEvent.tags.length > 0) {
+                          setNewEvent(prev => ({ ...prev, tags: prev.tags.slice(0, -1) }));
+                        }
+                      }}
+                      className={`flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-base ${
+                        isDarkMode 
+                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                          : 'bg-white border-gray-300 placeholder-gray-400'
+                      }`}
+                      placeholder="Neuen Tag eingeben und Enter drücken..."
+                      list="tag-suggestions"
+                    />
+                    <datalist id="tag-suggestions">
+                      {allTags.filter(tag => !newEvent.tags.includes(tag)).map(tag => (
+                        <option key={tag} value={tag} />
+                      ))}
+                    </datalist>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4">
+              {/* Event Preview */}
+              <div className="mt-6 p-4 rounded-xl border bg-gradient-to-br from-blue-50/60 to-indigo-50/40 dark:from-gray-900/60 dark:to-gray-800/40">
+                <div className="flex items-center gap-2 mb-2">
+                  <Calendar className="w-4 h-4 text-blue-500" />
+                  <span className="font-semibold">{newEvent.entry_date || 'Datum wählen'}</span>
+                  <Clock className="w-4 h-4 text-blue-500 ml-4" />
+                  <span className="font-semibold">{newEvent.entry_time || 'Zeit wählen'}</span>
+                  {newEvent.hasEndDateTime && newEvent.end_date && newEvent.end_time && (
+                    <>
+                      <span className="mx-2 text-gray-400">bis</span>
+                      <Calendar className="w-4 h-4 text-blue-400" />
+                      <span className="font-semibold">{newEvent.end_date}</span>
+                      <Clock className="w-4 h-4 text-blue-400 ml-2" />
+                      <span className="font-semibold">{newEvent.end_time}</span>
+                    </>
+                  )}
+                </div>
+                <div className="text-lg font-bold mb-1">{newEvent.name || <span className="italic text-gray-400">(Kein Name)</span>}</div>
+                <div className="text-base mb-1">{newEvent.description || <span className="italic text-gray-400">(Keine Beschreibung)</span>}</div>
+                {newEvent.location && (
+                  <div className="flex items-center gap-2 text-sm text-blue-700 dark:text-blue-300 mb-1">
+                    <MapPin className="w-4 h-4" /> {newEvent.location}
+                  </div>
+                )}
+                {newEvent.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {newEvent.tags.map((tag, i) => (
+                      <span key={i} className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border border-blue-300 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700">
+                        <Tag className="w-3 h-3" /> {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-3 pt-6">
                 <button
+                  type="button"
                   onClick={() => setShowAddForm(false)}
-                  className={`px-4 py-2 rounded-lg transition-colors ${
+                  className={`px-4 py-2 rounded-lg transition-colors font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     isDarkMode 
-                      ? 'text-gray-300 hover:bg-gray-700'
+                      ? 'text-gray-300 hover:bg-gray-700' 
                       : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >
                   Abbrechen
                 </button>
                 <button
-                  onClick={handleAddEvent}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  type="submit"
+                  className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   Event hinzufügen
                 </button>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       )}
