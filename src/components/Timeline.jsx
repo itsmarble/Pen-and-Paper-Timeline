@@ -30,6 +30,7 @@ import EditEventForm from './EditEventForm';
 import DateTimePicker from './DateTimePicker';
 import CurrentGameTimePicker from './CurrentGameTimePicker';
 import UnifiedTimeNavigator from './UnifiedTimeNavigator';
+import logger from '../utils/logger';
 
 const Timeline = () => {
   // Initialize with empty collection, load data in useEffect
@@ -101,7 +102,7 @@ const Timeline = () => {
         }
 
       } catch (error) {
-        console.error('Error loading data:', error);
+        logger.error('Error loading data:', error);
         setNotification({
           type: 'error',
           message: 'Fehler beim Laden der Daten: ' + error.message
@@ -165,7 +166,7 @@ const Timeline = () => {
           await dataManager.writeEvents(eventCollection.toJSON());
           
         } catch (error) {
-          console.error('Error saving data:', error);
+          logger.error('Error saving data:', error);
           setNotification({
             type: 'error',
             message: 'Fehler beim Speichern: ' + error.message
@@ -203,7 +204,17 @@ const Timeline = () => {
 
   // Search analytics for debugging and optimization
   const searchAnalytics = useMemo(() => {
-    return eventCollection.getSearchAnalytics();
+    // Minimal analytics: count unique terms in all events
+    const termSet = new Set();
+    eventCollection.events.forEach(event => {
+      const text = event.getSearchableText().combined;
+      text.split(/\s+/).forEach(word => {
+        if (word.length > 1) termSet.add(word);
+      });
+    });
+    return {
+      totalUniqueTerms: termSet.size
+    };
   }, [eventCollection]);
 
   // Get all available tags from the optimized collection
@@ -233,7 +244,7 @@ const Timeline = () => {
       
       return status;
     } catch (error) {
-      console.error('Error determining event status:', error, event);
+      logger.error('Error determining event status:', error, event);
       return 'unknown';
     }
   };
@@ -278,7 +289,7 @@ const Timeline = () => {
         setEventCollection(importedCollection);
         showNotification('Timeline erfolgreich importiert!');
       } catch (error) {
-        console.error('Import error:', error);
+        logger.error('Import error:', error);
         showNotification('Fehler beim Importieren der Datei!', 'error');
       }
     };
@@ -292,7 +303,7 @@ const Timeline = () => {
       await dataManager.openDataFolder();
       showNotification('Datenordner geöffnet!');
     } catch (error) {
-      console.error('Error opening data folder:', error);
+      logger.error('Error opening data folder:', error);
       showNotification('Fehler beim Öffnen des Datenordners!', 'error');
     }
   }, [showNotification]);
@@ -814,7 +825,7 @@ const Timeline = () => {
                           ⚡ Performance
                         </p>
                         <ul className={`space-y-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                          <li>📚 {searchAnalytics.totalEvents} Events indexiert</li>
+                          <li>📚 {filteredAndSortedEvents.length} Events indexiert</li>
                           <li>🔤 {searchAnalytics.totalUniqueTerms} einzigartige Begriffe</li>
                           <li>🎯 Multi-Algorithmus-Scoring</li>
                           <li>🚀 Echtzeit-Suche</li>

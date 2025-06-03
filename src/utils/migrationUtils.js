@@ -1,5 +1,6 @@
 // Migration utilities for transitioning between event formats
 import { OptimizedEvent, EventCollection } from './eventUtils.js';
+import logger from './logger';
 
 /**
  * Migration utilities for upgrading event data structures
@@ -21,7 +22,7 @@ export class EventMigration {
       try {
         return this.migrateSingleEvent(legacyEvent);
       } catch (error) {
-        console.error('Error migrating event:', legacyEvent, error);
+        logger.error('Error migrating event:', legacyEvent, error);
         return null;
       }
     }).filter(Boolean);
@@ -254,7 +255,7 @@ export class EventMigration {
       }
       throw new Error('Invalid backup format: missing events array');
     } catch (error) {
-      console.error('Error restoring from backup:', error);
+      logger.error('Error restoring from backup:', error);
       throw new Error('Failed to restore from backup: ' + error.message);
     }
   }
@@ -398,7 +399,7 @@ export class EventMigration {
 
     } catch (parseError) {
       result.errors.push(`JSON Parse Error: ${parseError.message}`);
-      console.error('Error parsing backup JSON:', parseError);
+      logger.error('Error parsing backup JSON:', parseError);
     }
 
     return result;
@@ -536,7 +537,7 @@ export class EventMigration {
 
     } catch (error) {
       result.errors.push(`Import processing error: ${error.message}`);
-      console.error('Error processing backup import:', error);
+      logger.error('Error processing backup import:', error);
     }
 
     return result;
