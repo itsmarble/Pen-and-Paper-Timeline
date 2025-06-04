@@ -708,9 +708,12 @@ export class EventValidator {
 export class EventFormatter {
   static formatDateTime(date, time) {
     if (!date || !time) return '';
-    
     try {
       const dateTime = new Date(`${date}T${time}`);
+      if (isNaN(dateTime.getTime())) {
+        // Invalid date, fallback
+        return `${date} ${time}`;
+      }
       return dateTime.toLocaleString('de-DE', {
         year: 'numeric',
         month: '2-digit',
