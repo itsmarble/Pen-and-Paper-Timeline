@@ -32,6 +32,7 @@ import CurrentGameTimePicker from './CurrentGameTimePicker';
 import UnifiedTimeNavigator from './UnifiedTimeNavigator';
 import logger from '../utils/logger';
 import SearchResultCard from './SearchResultCard';
+import SettingsModal from './SettingsModal';
 import debounce from 'lodash.debounce';
 
 const Timeline = () => {
@@ -47,6 +48,8 @@ const Timeline = () => {
   const [selectedTags, setSelectedTags] = useState([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [notification, setNotification] = useState(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [autoSaveInterval, setAutoSaveInterval] = useState(1000);
   const [newEvent, setNewEvent] = useState({
     name: '',
     entry_date: '',
@@ -93,6 +96,7 @@ const Timeline = () => {
         // Load saved preferences from localStorage (non-critical data)
         const savedTime = localStorage.getItem('timeline-current-time');
         const savedDarkMode = localStorage.getItem('timeline-dark-mode');
+        const savedInterval = localStorage.getItem('timeline-autosave');
         
         if (savedTime) {
           try {
@@ -104,6 +108,10 @@ const Timeline = () => {
 
         if (savedDarkMode === 'true') {
           setIsDarkMode(true);
+        }
+        if (savedInterval) {
+          const val = parseInt(savedInterval, 10);
+          if (!isNaN(val)) setAutoSaveInterval(val);
         }
 
       } catch (error) {
@@ -181,12 +189,13 @@ const Timeline = () => {
       
       // Save non-critical data to localStorage
       localStorage.setItem('timeline-current-time', currentGameTime.toISOString());
+      localStorage.setItem('timeline-autosave', autoSaveInterval.toString());
     };
 
     // Debounce saves to avoid too frequent writes
-    const timeoutId = setTimeout(saveData, 1000);
+    const timeoutId = setTimeout(saveData, autoSaveInterval);
     return () => clearTimeout(timeoutId);
-  }, [eventCollection, currentGameTime]);
+  }, [eventCollection, currentGameTime, autoSaveInterval]);
 
   // Debounce searchTerm updates
   useEffect(() => {
@@ -529,6 +538,16 @@ const Timeline = () => {
         />
       )}
 
+      {showSettings && (
+        <SettingsModal
+          isDarkMode={isDarkMode}
+          autoSaveInterval={autoSaveInterval}
+          onAutoSaveIntervalChange={setAutoSaveInterval}
+          onToggleDarkMode={toggleDarkMode}
+          onClose={() => setShowSettings(false)}
+        />
+      )}
+
       {/* Notification System */}
       {notification && (
         <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg transition-all duration-300 ${
@@ -766,6 +785,19 @@ const Timeline = () => {
                   aria-label="Datenordner öffnen"
                 >
                   <Folder className="w-4 h-4" />
+                </button>
+
+                <button
+                  onClick={() => setShowSettings(true)}
+                  className={`p-2 rounded-xl transition-colors ${
+                    isDarkMode
+                      ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                  title="Einstellungen"
+                  aria-label="Einstellungen"
+                >
+                  <Settings className="w-4 h-4" />
                 </button>
 
                 <button

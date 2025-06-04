@@ -14,6 +14,7 @@ export class OptimizedEvent {
     this.tags = Array.isArray(data.tags) ? data.tags : [];
     this.created_at = data.created_at || new Date().toISOString();
     this.updated_at = data.updated_at || new Date().toISOString();
+    this._searchCache = null;
   }
 
   getStartDateTime() {
@@ -58,13 +59,24 @@ export class OptimizedEvent {
   }
 
   getSearchableText() {
-    return {
-      name: this.name || '',
-      description: this.description || '',
-      location: this.location || '',
-      tags: this.tags || [],
-      combined: [this.name, this.description, this.location, ...this.tags].filter(Boolean).join(' ').toLowerCase()
-    };
+    if (!this._searchCache) {
+      this._searchCache = {
+        name: this.name || '',
+        description: this.description || '',
+        location: this.location || '',
+        tags: this.tags || [],
+        combined: [
+          this.name,
+          this.description,
+          this.location,
+          ...(this.tags || [])
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase()
+      };
+    }
+    return this._searchCache;
   }
 
   getSearchScore(searchTerm, selectedTags = []) {
@@ -394,6 +406,7 @@ export class OptimizedEvent {
 
   update(data) {
     Object.assign(this, data);
+    this._searchCache = null;
     this.updated_at = new Date().toISOString();
     return this;
   }
