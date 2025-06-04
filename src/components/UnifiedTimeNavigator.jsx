@@ -135,11 +135,13 @@ const UnifiedTimeNavigator = ({
   };
 
   return (
-    <div className={`p-4 rounded-xl backdrop-blur-sm border transition-all duration-300 ${
-      isDarkMode 
-        ? 'bg-gray-800/40 border-gray-700/50' 
-        : 'bg-white/60 border-gray-200/50'
-    } ${className}`}>
+    <div
+      className={`relative z-10 p-4 rounded-xl backdrop-blur-md border shadow-2xl ring-1 ring-black/5 transition-all duration-300 ${
+        isDarkMode
+          ? 'bg-gray-800/40 border-gray-700/50'
+          : 'bg-white/70 border-gray-200/50'
+      } ${className}`}
+    >
       
       {/* Unit Selector - Compact horizontal */}
       <div className="flex justify-center gap-1 mb-4">

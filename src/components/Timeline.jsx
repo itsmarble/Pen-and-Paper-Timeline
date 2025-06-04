@@ -711,11 +711,13 @@ const Timeline = () => {
                 
                 {/* Search Tips Tooltip */}
                 {searchTerm.length === 0 && isSearchFocused && (
-                  <div className={`absolute top-full left-0 right-0 mt-1 p-3 border rounded-xl shadow-lg text-xs ${
-                    isDarkMode 
-                      ? 'bg-gray-800/95 border-gray-600 text-gray-300' 
-                      : 'bg-blue-50/95 border-blue-200 text-blue-800'
-                  }`}>
+                  <div
+                    className={`absolute top-full left-0 right-0 mt-1 p-3 border rounded-xl shadow-xl backdrop-blur-md z-50 text-xs ${
+                      isDarkMode
+                        ? 'bg-gray-800/95 border-gray-600 text-gray-300'
+                        : 'bg-blue-50/90 border-blue-200 text-blue-800'
+                    }`}
+                  >
                     <div className="font-medium mb-1">🚀 KI-Powered Search Features:</div>
                     <ul className="space-y-1">
                       <li>• 🧠 "Gobblin Angrif" → "Goblin Angriff" (Fuzzy-Match)</li>
