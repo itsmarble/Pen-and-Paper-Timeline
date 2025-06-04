@@ -427,6 +427,11 @@ export class EventCollection {
     this._tagCache = null;
   }
 
+  _invalidateCache() {
+    this._sortedByDate = null;
+    this._tagCache = null;
+  }
+
   add(eventData) {
     const event = eventData instanceof OptimizedEvent ? eventData : new OptimizedEvent(eventData);
     this.events.push(event);
