@@ -1,5 +1,5 @@
 // EditEventForm.jsx - Modal form for editing events
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Plus } from 'lucide-react';
 import DateTimePicker from './DateTimePicker';
 import { EventValidator } from '../utils/eventUtils';
@@ -22,6 +22,17 @@ const EditEventForm = ({ event, isDarkMode, currentGameTime, onSave, onCancel }:
   });
   const [newTag, setNewTag] = useState('');
   const [validationErrors, setValidationErrors] = useState([]);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), 10);
+    return () => clearTimeout(t);
+  }, []);
+
+  const handleClose = () => {
+    setVisible(false);
+    setTimeout(onCancel, 300);
+  };
 
   const addTag = () => {
     if (newTag.trim() && !editData.tags.includes(newTag.trim())) {
@@ -74,14 +85,20 @@ const EditEventForm = ({ event, isDarkMode, currentGameTime, onSave, onCancel }:
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className={`rounded-2xl shadow-2xl max-w-md w-full p-6 transition-colors duration-300 ${
-        isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'
-      }`}>
+    <div
+      className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity duration-300 ${
+        visible ? 'opacity-100' : 'opacity-0'
+      }`}
+    >
+      <div
+        className={`rounded-2xl shadow-2xl max-w-md w-full p-6 transition-colors transform duration-300 ${
+          visible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+        } ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}`}
+      >
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold">Event bearbeiten</h3>
           <button
-            onClick={onCancel}
+            onClick={handleClose}
             className={`p-2 rounded-lg transition-colors ${
               isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
             }`}
@@ -221,9 +238,9 @@ const EditEventForm = ({ event, isDarkMode, currentGameTime, onSave, onCancel }:
           <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
-              onClick={onCancel}
+              onClick={handleClose}
               className={`px-4 py-2 rounded-lg transition-colors ${
-                isDarkMode 
+                isDarkMode
                   ? 'text-gray-300 hover:bg-gray-700'
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
