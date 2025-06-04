@@ -72,8 +72,9 @@ const Timeline = () => {
   const listRef = useRef(null);
   const sizeMap = useRef({});
   const [listHeight, setListHeight] = useState(600);
+  const [zoomLevel, setZoomLevel] = useState(1);
 
-  const getItemSize = index => sizeMap.current[index] || 300;
+  const getItemSize = index => (sizeMap.current[index] || 300) * zoomLevel;
 
   const setItemSize = (index, size) => {
     if (sizeMap.current[index] !== size) {
@@ -83,6 +84,12 @@ const Timeline = () => {
       }
     }
   };
+
+  useEffect(() => {
+    if (listRef.current) {
+      listRef.current.resetAfterIndex(0, true);
+    }
+  }, [zoomLevel]);
 
   useEffect(() => {
     const updateHeight = () => {
@@ -512,7 +519,7 @@ const Timeline = () => {
 
     const ref = useCallback(node => {
       if (node) {
-        const height = node.getBoundingClientRect().height;
+        const height = node.offsetHeight;
         setItemSize(index, height);
       }
     }, [index]);
@@ -619,21 +626,24 @@ const Timeline = () => {
                       <span className="font-medium">
                         Aktuelle Zeit: {currentGameTime.toLocaleDateString('de-DE')} {currentGameTime.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
                       </span>
-                      <button
-                        onClick={() => setIsEditingTime(true)}
-                        className={`p-1 rounded transition-colors ${
-                          isDarkMode 
-                            ? 'text-gray-400 hover:bg-gray-700 hover:text-white'
-                            : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
-                        }`}
-                        title="Zeit bearbeiten"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
+                  <button
+                    onClick={() => setIsEditingTime(true)}
+                    className={`p-1 rounded transition-colors ${
+                      isDarkMode
+                        ? 'text-gray-400 hover:bg-gray-700 hover:text-white'
+                        : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                    }`}
+                    title="Zeit bearbeiten"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                  </button>
                 </div>
+                <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  Zoom: {Math.round(zoomLevel * 100)}%
+                </span>
+                )}
               </div>
+            </div>
             </div>
 
             {/* Search, Filter and Controls */}
@@ -958,16 +968,30 @@ const Timeline = () => {
               )}
             </div>
           ) : (
-            <List
-              height={listHeight}
-              itemCount={filteredAndSortedEventsWithScores.length}
-              itemSize={getItemSize}
-              width="100%"
-              ref={listRef}
-              className="space-y-0 overflow-auto"
+            <div
+              onWheel={(e) => {
+                if (e.ctrlKey) {
+                  e.preventDefault();
+                  setZoomLevel((z) => {
+                    const next = z - e.deltaY * 0.001;
+                    return Math.min(2, Math.max(0.5, next));
+                  });
+                }
+              }}
             >
-              {Row}
-            </List>
+              <div style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'top left' }}>
+                <List
+                  height={listHeight / zoomLevel}
+                  itemCount={filteredAndSortedEventsWithScores.length}
+                  itemSize={getItemSize}
+                  width="100%"
+                  ref={listRef}
+                  className="space-y-0 overflow-auto"
+                >
+                  {Row}
+                </List>
+              </div>
+            </div>
           )}
         </div>
       </div>
