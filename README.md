@@ -69,7 +69,7 @@ A beautiful, modern timeline management application designed specifically for Du
 ```bash
 # Clone the repository
 git clone <your-repo-url>
-cd pen-paper-timeline
+cd Pen-and-Paper-Timeline
 
 # Install dependencies
 npm install
@@ -125,7 +125,7 @@ npm run build
 ## 📁 Project Structure
 
 ```
-pen-paper-timeline/
+Pen-and-Paper-Timeline/
 ├── src/                      # Main application source
 │   ├── components/           # React components
 │   │   ├── Timeline.jsx      # Main timeline component
