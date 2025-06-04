@@ -135,9 +135,9 @@ const UnifiedTimeNavigator = ({
   };
 
   return (
-    <div className={`p-4 rounded-xl backdrop-blur-sm border transition-all duration-300 ${
-      isDarkMode 
-        ? 'bg-gray-800/40 border-gray-700/50' 
+    <div className={`relative z-10 p-4 rounded-xl backdrop-blur-sm border shadow-xl transition-all duration-300 ${
+      isDarkMode
+        ? 'bg-gray-800/40 border-gray-700/50'
         : 'bg-white/60 border-gray-200/50'
     } ${className}`}>
       
