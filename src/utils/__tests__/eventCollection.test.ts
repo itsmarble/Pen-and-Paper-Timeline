@@ -1,4 +1,4 @@
-import { EventCollection } from '../eventUtils.js';
+import { EventCollection } from '../eventUtils';
 
 describe('EventCollection.getDateRange', () => {
   test('returns null for empty collection', () => {

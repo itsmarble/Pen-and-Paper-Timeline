@@ -1,5 +1,5 @@
 // Migration utilities for transitioning between event formats
-import { OptimizedEvent, EventCollection } from './eventUtils.js';
+import { OptimizedEvent, EventCollection } from './eventUtils';
 import logger from './logger';
 
 /**

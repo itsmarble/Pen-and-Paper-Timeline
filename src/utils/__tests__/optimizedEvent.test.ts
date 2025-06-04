@@ -1,4 +1,4 @@
-import { OptimizedEvent } from '../eventUtils.js';
+import { OptimizedEvent } from '../eventUtils';
 
 describe('OptimizedEvent date/time helpers', () => {
   test('getStartDateTime returns null if no entry_date', () => {

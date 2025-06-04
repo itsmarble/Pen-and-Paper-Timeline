@@ -129,13 +129,13 @@ npm run build
 Pen-and-Paper-Timeline/
 ├── src/                      # Main application source
 │   ├── components/           # React components
-│   │   ├── Timeline.jsx      # Main timeline component
-│   │   ├── EventCard.jsx     # Individual event display
-│   │   ├── EditEventForm.jsx # Event creation/editing
+│   │   ├── Timeline.tsx      # Main timeline component
+│   │   ├── EventCard.tsx     # Individual event display
+│   │   ├── EditEventForm.tsx # Event creation/editing
 │   │   └── ...              # Other components
 │   ├── utils/               # Utility functions
-│   │   ├── eventUtils.js    # Event processing & search
-│   │   ├── migrationUtils.js # Data import/export
+│   │   ├── eventUtils.ts    # Event processing & search
+│   │   ├── migrationUtils.ts # Data import/export
 │   │   └── ...              # Other utilities
 │   └── data/                # Local data storage
 ├── electron/                # Electron configuration
