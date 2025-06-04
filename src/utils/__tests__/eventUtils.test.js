@@ -41,4 +41,18 @@ describe('EventValidator.validateEvent', () => {
     expect(result.isValid).toBe(false);
     expect(result.errors).toContain('Event time is required');
   });
+
+  test('end date/time before start returns error', () => {
+    const result = EventValidator.validateEvent({
+      name: 'Test',
+      description: 'desc',
+      entry_date: '2024-01-02',
+      entry_time: '12:00',
+      hasEndDateTime: true,
+      end_date: '2024-01-01',
+      end_time: '11:00'
+    });
+    expect(result.isValid).toBe(false);
+    expect(result.errors).toContain('End date/time must be after start date/time');
+  });
 });
