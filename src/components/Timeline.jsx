@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -34,6 +34,7 @@ import logger from '../utils/logger';
 import SearchResultCard from './SearchResultCard';
 import SettingsModal from './SettingsModal';
 import debounce from 'lodash.debounce';
+import { VariableSizeList as List } from 'react-window';
 
 const Timeline = () => {
   // Initialize with empty collection, load data in useEffect
@@ -64,6 +65,31 @@ const Timeline = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [focusedSuggestionIndex, setFocusedSuggestionIndex] = useState(-1);
   const [lastSavedData, setLastSavedData] = useState(null);
+
+  // react-window refs and helpers
+  const listRef = useRef(null);
+  const sizeMap = useRef({});
+  const [listHeight, setListHeight] = useState(600);
+
+  const getItemSize = index => sizeMap.current[index] || 300;
+
+  const setItemSize = (index, size) => {
+    if (sizeMap.current[index] !== size) {
+      sizeMap.current[index] = size;
+      if (listRef.current) {
+        listRef.current.resetAfterIndex(index);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const updateHeight = () => {
+      setListHeight(window.innerHeight - 300);
+    };
+    updateHeight();
+    window.addEventListener('resize', updateHeight);
+    return () => window.removeEventListener('resize', updateHeight);
+  }, []);
 
   // Load data on mount and set up auto-save
   useEffect(() => {
@@ -482,15 +508,23 @@ const Timeline = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [exportData, toggleDarkMode]);
 
-  // Memoized rendering of EventCards for performance
-  const renderedEventCards = useMemo(() => {
-    return filteredAndSortedEventsWithScores.map((result) => {
-      // Support both {event, score} and plain event
-      const event = result.event || result;
-      const status = getEventStatus(event);
-      if (editingEvent === event.id) {
-        return (
-          <div key={event.id} className="ml-16 mb-8">
+  // react-window row renderer
+  const Row = ({ index, style }) => {
+    const result = filteredAndSortedEventsWithScores[index];
+    const event = result.event || result;
+    const status = getEventStatus(event);
+
+    const ref = useCallback(node => {
+      if (node) {
+        const height = node.getBoundingClientRect().height;
+        setItemSize(index, height);
+      }
+    }, [index]);
+
+    return (
+      <div style={style} ref={ref}>
+        {editingEvent === event.id ? (
+          <div className="ml-16 mb-8">
             <EditEventForm
               event={event}
               isDarkMode={isDarkMode}
@@ -499,21 +533,18 @@ const Timeline = () => {
               onCancel={() => setEditingEvent(null)}
             />
           </div>
-        );
-      } else {
-        return (
+        ) : (
           <EventCard
-            key={event.id}
             event={event}
             status={status}
             isDarkMode={isDarkMode}
             onEdit={handleEditEvent}
             onDelete={handleDeleteEvent}
           />
-        );
-      }
-    });
-  }, [filteredAndSortedEventsWithScores, editingEvent, isDarkMode, currentGameTime, handleSaveEdit, handleEditEvent, handleDeleteEvent, getEventStatus]);
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
@@ -913,9 +944,16 @@ const Timeline = () => {
               )}
             </div>
           ) : (
-            <div className="space-y-0">
-              {renderedEventCards}
-            </div>
+            <List
+              height={listHeight}
+              itemCount={filteredAndSortedEventsWithScores.length}
+              itemSize={getItemSize}
+              width="100%"
+              ref={listRef}
+              className="space-y-0 overflow-auto"
+            >
+              {Row}
+            </List>
           )}
         </div>
       </div>
