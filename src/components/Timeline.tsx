@@ -511,44 +511,7 @@ const Timeline = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [exportData, toggleDarkMode]);
 
-  // react-window row renderer
-  const Row = ({ index, style }) => {
-    const result = filteredAndSortedEventsWithScores[index];
-    const event = result.event || result;
-    const status = getEventStatus(event);
-
-    const ref = useCallback(node => {
-      if (node) {
-        const height = node.offsetHeight;
-        setItemSize(index, height);
-      }
-    }, [index]);
-
-    return (
-      <div style={style} ref={ref}>
-        {editingEvent === event.id ? (
-          <div className="ml-16 mb-8">
-            <EditEventForm
-              event={event}
-              isDarkMode={isDarkMode}
-              currentGameTime={currentGameTime}
-              onSave={handleSaveEdit}
-              onCancel={() => setEditingEvent(null)}
-            />
-          </div>
-        ) : (
-          <EventCard
-            event={event}
-            status={status}
-            isDarkMode={isDarkMode}
-            onEdit={handleEditEvent}
-            onDelete={handleDeleteEvent}
-          />
-        )}
-      </div>
-    );
-  };
-
+  // Sticky Header (Kopfbereich kompakter machen)
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
       isDarkMode 
@@ -593,21 +556,21 @@ const Timeline = () => {
           ? 'bg-gray-900/80 border-gray-700' 
           : 'bg-white/80 border-white/20'
       }`}>
-        <div className="max-w-7xl mx-auto p-4">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Clock className="w-6 h-6 text-white" />
+        <div className="max-w-7xl mx-auto px-1 py-0.5"> {/* Weniger Padding */}
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-1"> {/* Weniger Gap */}
+            <div className="flex items-center gap-1"> {/* Weniger Gap */}
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg"> {/* Kleineres Icon */}
+                <Clock className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h1 className={`text-2xl font-bold ${
+                <h1 className={`text-lg font-bold ${
                   isDarkMode 
                     ? 'bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent'
                     : 'bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent'
                 }`}>
                   Kampagnen-Timeline
                 </h1>
-                <div className={`flex items-center gap-2 text-sm ${
+                <div className={`flex items-center gap-1 text-xs ${
                   isDarkMode ? 'text-gray-300' : 'text-gray-600'
                 }`}>
                   {isEditingTime ? (
@@ -622,35 +585,32 @@ const Timeline = () => {
                       isDarkMode={isDarkMode}
                     />
                   ) : (
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1"> {/* Weniger Gap */}
                       <span className="font-medium">
-                        Aktuelle Zeit: {currentGameTime.toLocaleDateString('de-DE')} {currentGameTime.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
+                        {currentGameTime.toLocaleDateString('de-DE')} {currentGameTime.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
                       </span>
                       <button
                         onClick={() => setIsEditingTime(true)}
-                        className={`p-1 rounded transition-colors ${
-                          isDarkMode
+                        className={`p-0.5 rounded transition-colors ${
+                          isDarkMode 
                             ? 'text-gray-400 hover:bg-gray-700 hover:text-white'
                             : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
                         }`}
                         title="Zeit bearbeiten"
                       >
-                        <Edit3 className="w-4 h-4" />
+                        <Edit3 className="w-3 h-3" />
                       </button>
-                      <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        Zoom: {Math.round(zoomLevel * 100)}%
-                      </span>
+                      <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Zoom: {Math.round(zoomLevel * 100)}%</span>
                     </div>
                   )}
+                </div>
               </div>
             </div>
-            </div>
-
-            {/* Search, Filter and Controls */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto">
+            {/* Controls (Search, Filter, Settings, Add) */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 w-full lg:w-auto"> {/* Weniger Gap */}
               {/* Enhanced Search Bar with Suggestions */}
               <div className="relative flex-1 lg:flex-none">
-                <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 z-10 ${
+                <Search className={`absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 z-10 ${
                   isDarkMode ? 'text-gray-400' : 'text-gray-500'
                 }`} />
                 <input
@@ -658,13 +618,13 @@ const Timeline = () => {
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="🧠 KI-Suche: Tippfehler-tolerant, Deutsche Umlaute, Teilwörter, Soundex, Multi-Feld..."
-                  className={`pl-10 pr-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors w-full sm:w-96 ${
+                  placeholder="🧠 KI-Suche..."
+                  className={`pl-8 pr-2 py-1 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors w-full sm:w-72 ${
                     isDarkMode
                       ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
                       : 'bg-white border-gray-300 placeholder-gray-500'
                   }`}
-                  title="🚀 Ultra-Intelligente Suche: Fuzzy-Matching • Levenshtein & Jaro-Winkler • Soundex • Deutsche Normalisierung • Phrase-Matching • N-Gram-Analyse • Multi-Feld-Scoring (Name:400%, Beschreibung:250%, Ort:200%, Tags:150%) • Echtzeit-Suggestions"
+                  title="KI-Suche"
                   aria-label="Suchfeld"
                   aria-controls="search-suggestion-list"
                   aria-activedescendant={
@@ -778,10 +738,10 @@ const Timeline = () => {
               )}
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
                 <button
                   onClick={toggleDarkMode}
-                  className={`p-2 rounded-xl transition-colors ${
+                  className={`p-1 rounded-lg transition-colors ${
                     isDarkMode
                       ? 'bg-gray-700 text-yellow-400 hover:bg-gray-600'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -789,12 +749,12 @@ const Timeline = () => {
                   title={isDarkMode ? 'Hell-Modus (Ctrl+D)' : 'Dunkel-Modus (Ctrl+D)'}
                   aria-label={isDarkMode ? 'Hell-Modus einschalten' : 'Dunkel-Modus einschalten'}
                 >
-                  {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                  {isDarkMode ? <Sun className="w-3 h-3" /> : <Moon className="w-3 h-3" />}
                 </button>
 
                 <button
                   onClick={exportData}
-                  className={`p-2 rounded-xl transition-colors ${
+                  className={`p-1 rounded-lg transition-colors ${
                     isDarkMode
                       ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -802,17 +762,17 @@ const Timeline = () => {
                   title="Daten exportieren (Ctrl+S)"
                   aria-label="Daten exportieren"
                 >
-                  <Download className="w-4 h-4" />
+                  <Download className="w-3 h-3" />
                 </button>
 
-                <label className={`p-2 rounded-xl cursor-pointer transition-colors ${
+                <label className={`p-1 rounded-lg cursor-pointer transition-colors ${
                   isDarkMode
                     ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
                 title="Daten importieren"
                 aria-label="Daten importieren">
-                  <Upload className="w-4 h-4" />
+                  <Upload className="w-3 h-3" />
                   <input
                     type="file"
                     accept=".json"
@@ -824,7 +784,7 @@ const Timeline = () => {
 
                 <button
                   onClick={openDataFolder}
-                  className={`p-2 rounded-xl transition-colors ${
+                  className={`p-1 rounded-lg transition-colors ${
                     isDarkMode
                       ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -832,12 +792,12 @@ const Timeline = () => {
                   title="Datenordner öffnen"
                   aria-label="Datenordner öffnen"
                 >
-                  <Folder className="w-4 h-4" />
+                  <Folder className="w-3 h-3" />
                 </button>
 
                 <button
                   onClick={() => setShowSettings(true)}
-                  className={`p-2 rounded-xl transition-colors ${
+                  className={`p-1 rounded-lg transition-colors ${
                     isDarkMode
                       ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -845,88 +805,85 @@ const Timeline = () => {
                   title="Einstellungen"
                   aria-label="Einstellungen"
                 >
-                  <Settings className="w-4 h-4" />
+                  <Settings className="w-3 h-3" />
                 </button>
 
                 <button
                   onClick={() => setShowAddForm(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg shadow-blue-500/25"
+                  className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg shadow-blue-500/25 text-xs"
                   title="Neues Event hinzufügen (Ctrl+N)"
                   aria-label="Neues Event hinzufügen"
                 >
-                  <Plus className="w-4 h-4" />
-                  Neues Event
+                  <Plus className="w-3 h-3" />
+                  Neu
                 </button>
               </div>
             </div>
           </div>
-
-          {/* Beautiful Time Navigation */}
-          <UnifiedTimeNavigator
-            currentTime={currentGameTime}
-            onTimeChange={setCurrentGameTime}
-            isDarkMode={isDarkMode}
-            compact={true}
-            showQuickJump={false}
-            className="relative z-20 mt-2"
-          />
+          {/* Move UnifiedTimeNavigator below header, make compact */}
         </div>
+      </div>
+      <div className="max-w-7xl mx-auto px-2 pt-1 pb-0">
+        <UnifiedTimeNavigator
+          currentTime={currentGameTime}
+          onTimeChange={setCurrentGameTime}
+          isDarkMode={isDarkMode}
+          className="relative z-20 mt-0 mb-2"
+        />
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto flex flex-col grow min-h-[60vh] p-2 sm:p-4 md:p-6"> {/* grow und weniger Padding */}
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className={`p-4 rounded-xl border transition-colors ${
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
+          <div className={`p-2 rounded-lg border transition-colors text-xs ${
             isDarkMode 
               ? 'bg-gray-800/50 border-gray-700' 
               : 'bg-white/80 border-gray-200'
           }`}>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center">
-                <Clock className="w-5 h-5 text-white" />
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-emerald-500 rounded flex items-center justify-center">
+                <Clock className="w-3 h-3 text-white" />
               </div>
               <div>
-                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Aktuelle Events</p>
-                <p className="text-xl font-bold text-emerald-500">
+                <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Aktuelle Events</p>
+                <p className="text-lg font-bold text-emerald-500">
                   {filteredAndSortedEventsWithScores.filter(event => getEventStatus(event) === 'current').length}
                 </p>
               </div>
             </div>
           </div>
-          
-          <div className={`p-4 rounded-xl border transition-colors ${
+          <div className={`p-2 rounded-lg border transition-colors text-xs ${
             isDarkMode 
               ? 'bg-gray-800/50 border-gray-700' 
               : 'bg-white/80 border-gray-200'
           }`}>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-white" />
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center">
+                <Calendar className="w-3 h-3 text-white" />
               </div>
               <div>
-                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Geplante Events</p>
-                <p className="text-xl font-bold text-blue-500">
+                <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Geplante Events</p>
+                <p className="text-lg font-bold text-blue-500">
                   {filteredAndSortedEventsWithScores.filter(event => getEventStatus(event) === 'future').length}
                 </p>
               </div>
             </div>
           </div>
-          
-          <div className={`p-4 rounded-xl border transition-colors ${
+          <div className={`p-2 rounded-lg border transition-colors text-xs ${
             isDarkMode 
               ? 'bg-gray-800/50 border-gray-700' 
               : 'bg-white/80 border-gray-200'
           }`}>
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+            <div className="flex items-center gap-2">
+              <div className={`w-6 h-6 rounded flex items-center justify-center ${
                 isDarkMode ? 'bg-gray-600' : 'bg-gray-500'
               }`}>
-                <MapPin className="w-5 h-5 text-white" />
+                <MapPin className="w-3 h-3 text-white" />
               </div>
               <div>
-                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Vergangene Events</p>
-                <p className={`text-xl font-bold ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Vergangene Events</p>
+                <p className={`text-lg font-bold ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}> 
                   {filteredAndSortedEventsWithScores.filter(event => getEventStatus(event) === 'past').length}
                 </p>
               </div>
@@ -940,7 +897,7 @@ const Timeline = () => {
                style={{maxWidth: 480}}>
             <div className="font-semibold mb-1">🔍 Suchergebnis</div>
             <ul className="list-disc pl-5">
-              <li>{filteredAndSortedEventsWithScores.length} von {eventCollection.length} Events gefunden</li>
+              <li>{filteredAndSortedEventsWithScores.length} von {eventCollection.events.length} Events gefunden</li>
               <li>Gewichtung: Name &gt; Beschreibung &gt; Ort &gt; Tags</li>
             </ul>
           </div>
@@ -988,7 +945,20 @@ const Timeline = () => {
                   ref={listRef}
                   className="space-y-0 overflow-auto"
                 >
-                  {Row}
+                  {({ index, style }) => {
+                  const EventCardAny = EventCard as any;
+                  return (
+                    <div style={style} key={filteredAndSortedEventsWithScores[index].id}>
+                      <EventCardAny
+                        event={filteredAndSortedEventsWithScores[index]}
+                        status={getEventStatus(filteredAndSortedEventsWithScores[index])}
+                        isDarkMode={isDarkMode}
+                        onEdit={handleEditEvent}
+                        onDelete={handleDeleteEvent}
+                      />
+                    </div>
+                  );
+                }}
                 </List>
               </div>
             </div>
