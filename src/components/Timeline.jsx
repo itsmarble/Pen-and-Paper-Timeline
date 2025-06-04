@@ -345,7 +345,7 @@ const Timeline = () => {
       };
       
       // Validate event data before adding
-      const validation = EventValidator.validate(eventToAdd);
+      const validation = EventValidator.validateEvent(eventToAdd);
       if (!validation.isValid) {
         showNotification(`Event-Daten sind ungültig: ${validation.errors.join(', ')}`, 'error');
         return;
@@ -379,7 +379,7 @@ const Timeline = () => {
 
   const handleSaveEdit = useCallback((updatedEvent) => {
     // Validate updated event data
-    const validation = EventValidator.validate(updatedEvent);
+    const validation = EventValidator.validateEvent(updatedEvent);
     if (!validation.isValid) {
       showNotification(`Event-Daten sind ungültig: ${validation.errors.join(', ')}`, 'error');
       return;
