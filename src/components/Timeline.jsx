@@ -31,6 +31,8 @@ import DateTimePicker from './DateTimePicker';
 import CurrentGameTimePicker from './CurrentGameTimePicker';
 import UnifiedTimeNavigator from './UnifiedTimeNavigator';
 import logger from '../utils/logger';
+import SearchResultCard from './SearchResultCard';
+import debounce from 'lodash.debounce';
 
 const Timeline = () => {
   // Initialize with empty collection, load data in useEffect
@@ -41,6 +43,7 @@ const Timeline = () => {
   const [editingEvent, setEditingEvent] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
   const [selectedTags, setSelectedTags] = useState([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [notification, setNotification] = useState(null);
@@ -55,6 +58,7 @@ const Timeline = () => {
     tags: [],
     hasEndDateTime: false
   });
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   // Load data on mount and set up auto-save
   useEffect(() => {
@@ -183,18 +187,23 @@ const Timeline = () => {
     return () => clearTimeout(timeoutId);
   }, [eventCollection, currentGameTime]);
 
+  // Debounce searchTerm updates
+  useEffect(() => {
+    const handler = debounce((value) => setDebouncedSearchTerm(value), 300);
+    handler(searchTerm);
+    return () => handler.cancel();
+  }, [searchTerm]);
+
   // Enhanced search and filtering using optimized event collection
-  const filteredAndSortedEvents = useMemo(() => {
+  const filteredAndSortedEventsWithScores = useMemo(() => {
     // Use the advanced search with detailed options
-    const results = eventCollection.search(searchTerm, selectedTags, {
-      minScore: 0.05,        // Lower threshold for more inclusive results
-      maxResults: 200,       // Allow more results
-      sortBy: 'relevance',   // Sort by relevance first
-      includeScoring: false  // Don't include scoring details for performance
+    return eventCollection.search(debouncedSearchTerm, selectedTags, {
+      minScore: 0.05,
+      maxResults: 200,
+      sortBy: 'relevance',
+      includeScoring: true // <-- get scoring details for UI
     });
-    
-    return results;
-  }, [eventCollection, searchTerm, selectedTags]);
+  }, [eventCollection, debouncedSearchTerm, selectedTags]);
 
   // Get search suggestions for autocomplete
   const searchSuggestions = useMemo(() => {
@@ -450,7 +459,38 @@ const Timeline = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [exportData, toggleDarkMode]);
 
-
+  // Memoized rendering of EventCards for performance
+  const renderedEventCards = useMemo(() => {
+    return filteredAndSortedEventsWithScores.map((result) => {
+      // Support both {event, score} and plain event
+      const event = result.event || result;
+      const status = getEventStatus(event);
+      if (editingEvent === event.id) {
+        return (
+          <div key={event.id} className="ml-16 mb-8">
+            <EditEventForm
+              event={event}
+              isDarkMode={isDarkMode}
+              currentGameTime={currentGameTime}
+              onSave={handleSaveEdit}
+              onCancel={() => setEditingEvent(null)}
+            />
+          </div>
+        );
+      } else {
+        return (
+          <EventCard
+            key={event.id}
+            event={event}
+            status={status}
+            isDarkMode={isDarkMode}
+            onEdit={handleEditEvent}
+            onDelete={handleDeleteEvent}
+          />
+        );
+      }
+    });
+  }, [filteredAndSortedEventsWithScores, editingEvent, isDarkMode, currentGameTime, handleSaveEdit, handleEditEvent, handleDeleteEvent, getEventStatus]);
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
@@ -458,6 +498,17 @@ const Timeline = () => {
         ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900' 
         : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'
     }`}>
+      {/* Show EditEventForm for adding a new event */}
+      {showAddForm && (
+        <EditEventForm
+          event={newEvent}
+          isDarkMode={isDarkMode}
+          currentGameTime={currentGameTime}
+          onSave={handleAddEvent}
+          onCancel={() => setShowAddForm(false)}
+        />
+      )}
+
       {/* Notification System */}
       {notification && (
         <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg transition-all duration-300 ${
@@ -543,6 +594,8 @@ const Timeline = () => {
                       : 'bg-white border-gray-300 placeholder-gray-500'
                   }`}
                   title="🚀 Ultra-Intelligente Suche: Fuzzy-Matching • Levenshtein & Jaro-Winkler • Soundex • Deutsche Normalisierung • Phrase-Matching • N-Gram-Analyse • Multi-Feld-Scoring (Name:400%, Beschreibung:250%, Ort:200%, Tags:150%) • Echtzeit-Suggestions"
+                  onFocus={() => setIsSearchFocused(true)}
+                  onBlur={() => setIsSearchFocused(false)}
                 />
                 
                 {/* Search Suggestions Dropdown */}
@@ -577,12 +630,12 @@ const Timeline = () => {
                 )}
                 
                 {/* Search Tips Tooltip */}
-                {searchTerm.length === 0 && (
+                {searchTerm.length === 0 && isSearchFocused && (
                   <div className={`absolute top-full left-0 right-0 mt-1 p-3 border rounded-xl shadow-lg text-xs ${
                     isDarkMode 
                       ? 'bg-gray-800/95 border-gray-600 text-gray-300' 
                       : 'bg-blue-50/95 border-blue-200 text-blue-800'
-                  }`} style={{ display: 'none' }} onMouseEnter={(e) => e.target.style.display = 'block'}>
+                  }`}>
                     <div className="font-medium mb-1">🚀 KI-Powered Search Features:</div>
                     <ul className="space-y-1">
                       <li>• 🧠 "Gobblin Angrif" → "Goblin Angriff" (Fuzzy-Match)</li>
@@ -723,7 +776,7 @@ const Timeline = () => {
               <div>
                 <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Aktuelle Events</p>
                 <p className="text-xl font-bold text-emerald-500">
-                  {filteredAndSortedEvents.filter(event => getEventStatus(event) === 'current').length}
+                  {filteredAndSortedEventsWithScores.filter(event => getEventStatus(event) === 'current').length}
                 </p>
               </div>
             </div>
@@ -741,7 +794,7 @@ const Timeline = () => {
               <div>
                 <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Geplante Events</p>
                 <p className="text-xl font-bold text-blue-500">
-                  {filteredAndSortedEvents.filter(event => getEventStatus(event) === 'future').length}
+                  {filteredAndSortedEventsWithScores.filter(event => getEventStatus(event) === 'future').length}
                 </p>
               </div>
             </div>
@@ -761,7 +814,7 @@ const Timeline = () => {
               <div>
                 <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Vergangene Events</p>
                 <p className={`text-xl font-bold ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  {filteredAndSortedEvents.filter(event => getEventStatus(event) === 'past').length}
+                  {filteredAndSortedEventsWithScores.filter(event => getEventStatus(event) === 'past').length}
                 </p>
               </div>
             </div>
@@ -770,125 +823,19 @@ const Timeline = () => {
 
         {/* Enhanced Search Results Info */}
         {(searchTerm || selectedTags.length > 0) && (
-          <div className={`mb-6 p-4 rounded-xl border transition-colors ${
-            isDarkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-blue-50 border-blue-200'
-          }`}>
-            <div className="flex items-start gap-3">
-              <Search className={`w-5 h-5 mt-0.5 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <p className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {filteredAndSortedEvents.length === 0 
-                      ? `🔍 Keine Treffer gefunden`
-                      : `🎯 ${filteredAndSortedEvents.length} von ${eventCollection.length} Events gefunden`
-                    }
-                  </p>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    filteredAndSortedEvents.length > 0 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-orange-100 text-orange-800'
-                  }`}>
-                    {eventCollection.length > 0 ? Math.round((filteredAndSortedEvents.length / eventCollection.length) * 100) : 0}%
-                  </span>
-                </div>
-                
-                {/* Enhanced Search Analytics */}
-                {searchTerm && (
-                  <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                      <div>
-                        <p className={`font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                          🧠 Intelligente Features
-                        </p>
-                        <ul className={`space-y-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                          <li>✅ Fuzzy-Matching (Tippfehler-tolerant)</li>
-                          <li>✅ Deutsche Umlaute (ä→ae, ö→oe, ü→ue)</li>
-                          <li>✅ Teilwort-Suche & Präfixe</li>
-                          <li>✅ Soundex (phonetische Ähnlichkeit)</li>
-                        </ul>
-                      </div>
-                      
-                      <div>
-                        <p className={`font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                          📊 Suchbereich
-                        </p>
-                        <ul className={`space-y-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                          <li>🏷️ Namen (Gewichtung: 400%)</li>
-                          <li>📝 Beschreibungen (250%)</li>
-                          <li>📍 Orte (200%)</li>
-                          <li>🏷️ Tags (150%)</li>
-                        </ul>
-                      </div>
-                      
-                      <div>
-                        <p className={`font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                          ⚡ Performance
-                        </p>
-                        <ul className={`space-y-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                          <li>📚 {filteredAndSortedEvents.length} Events indexiert</li>
-                          <li>🔤 {searchAnalytics.totalUniqueTerms} einzigartige Begriffe</li>
-                          <li>🎯 Multi-Algorithmus-Scoring</li>
-                          <li>🚀 Echtzeit-Suche</li>
-                        </ul>
-                      </div>
-                    </div>
-                    
-                    {/* Search Quality Indicators */}
-                    {searchTerm.length > 2 && (
-                      <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
-                        <div className="flex flex-wrap gap-2">
-                          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
-                            isDarkMode ? 'bg-green-900 text-green-200' : 'bg-green-100 text-green-800'
-                          }`}>
-                            🎯 Exakte Phrasen-Suche aktiv
-                          </span>
-                          {searchTerm.includes('ä') || searchTerm.includes('ö') || searchTerm.includes('ü') || searchTerm.includes('ß') ? (
-                            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
-                              isDarkMode ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-800'
-                            }`}>
-                              🇩🇪 Deutsche Zeichen normalisiert
-                            </span>
-                          ) : null}
-                          {searchTerm.split(' ').length > 1 && (
-                            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
-                              isDarkMode ? 'bg-purple-900 text-purple-200' : 'bg-purple-100 text-purple-800'
-                            }`}>
-                              🔗 Multi-Begriff-Bonus aktiv
-                            </span>
-                          )}
-                          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
-                            isDarkMode ? 'bg-orange-900 text-orange-200' : 'bg-orange-100 text-orange-800'
-                          }`}>
-                            🔍 Levenshtein + Jaro-Winkler
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {/* Search Tips for Better Results */}
-                {filteredAndSortedEvents.length === 0 && searchTerm && (
-                  <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
-                    <p className={`text-sm font-medium mb-2 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-700'}`}>
-                      💡 Tipps für bessere Suchergebnisse:
-                    </p>
-                    <ul className={`text-xs space-y-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                      <li>• Versuche kürzere oder allgemeinere Begriffe</li>
-                      <li>• Nutze Teilwörter (z.B. "Gob" statt "Goblin")</li>
-                      <li>• Kombiniere mit Tag-Filtern</li>
-                      <li>• Die Suche ist tippfehler-tolerant - probiere Variationen aus</li>
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </div>
+          <div className={`mb-4 p-3 rounded-lg border text-xs ${isDarkMode ? 'bg-gray-900 border-gray-700 text-gray-300' : 'bg-gray-50 border-gray-200 text-gray-700'}`}
+               style={{maxWidth: 480}}>
+            <div className="font-semibold mb-1">🔍 Suchergebnis</div>
+            <ul className="list-disc pl-5">
+              <li>{filteredAndSortedEventsWithScores.length} von {eventCollection.length} Events gefunden</li>
+              <li>Gewichtung: Name &gt; Beschreibung &gt; Ort &gt; Tags</li>
+            </ul>
           </div>
         )}
 
-        {/* Timeline */}
+        {/* Timeline / Search Results */}
         <div className="relative">
-          {filteredAndSortedEvents.length === 0 ? (
+          {filteredAndSortedEventsWithScores.length === 0 ? (
             <div className={`text-center py-16 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
               <Clock className="w-16 h-16 mx-auto mb-4 opacity-50" />
               <h3 className="text-xl font-medium mb-2">Keine Events gefunden</h3>
@@ -909,254 +856,11 @@ const Timeline = () => {
             </div>
           ) : (
             <div className="space-y-0">
-              {filteredAndSortedEvents.map((event) => {
-                const status = getEventStatus(event);
-                
-                return editingEvent === event.id ? (
-                  <div key={event.id} className="ml-16 mb-8">
-                    <EditEventForm
-                      event={event}
-                      isDarkMode={isDarkMode}
-                      currentGameTime={currentGameTime}
-                      onSave={handleSaveEdit}
-                      onCancel={() => setEditingEvent(null)}
-                    />
-                  </div>
-                ) : (
-                  <EventCard
-                    key={event.id}
-                    event={event}
-                    status={status}
-                    isDarkMode={isDarkMode}
-                    onEdit={handleEditEvent}
-                    onDelete={handleDeleteEvent}
-                  />
-                );
-              })}
+              {renderedEventCards}
             </div>
           )}
         </div>
       </div>
-
-      {/* Add Event Modal */}
-      {showAddForm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
-          <div className={`rounded-2xl shadow-2xl w-full max-w-md p-6 transition-colors duration-300 border-2 border-blue-400/20 max-h-[90vh] overflow-y-auto ${
-            isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'
-          }`} tabIndex={-1} aria-modal="true" role="dialog">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-extrabold tracking-tight flex items-center gap-2">
-                <Plus className="w-6 h-6 text-blue-500" /> Neues Event erstellen
-              </h3>
-              <button
-                onClick={() => setShowAddForm(false)}
-                className={`p-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
-                }`}
-                aria-label="Schließen"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form
-              className="space-y-6"
-              onSubmit={e => { e.preventDefault(); handleAddEvent(); }}
-              autoComplete="off"
-            >
-              <div className="grid grid-cols-1 gap-4">
-                <DateTimePicker
-                  date={newEvent.entry_date}
-                  time={newEvent.entry_time}
-                  endDate={newEvent.end_date}
-                  endTime={newEvent.end_time}
-                  hasEndDateTime={newEvent.hasEndDateTime}
-                  currentGameTime={currentGameTime}
-                  onDateChange={(date) => setNewEvent({...newEvent, entry_date: date})}
-                  onTimeChange={(time) => setNewEvent({...newEvent, entry_time: time})}
-                  onEndDateChange={(date) => setNewEvent({...newEvent, end_date: date})}
-                  onEndTimeChange={(time) => setNewEvent({...newEvent, end_time: time})}
-                  onToggleRange={(hasRange) => setNewEvent({...newEvent, hasEndDateTime: hasRange})}
-                  isDarkMode={isDarkMode}
-                  label="Event-Zeit"
-                  required={true}
-                />
-
-                <div>
-                  <label className="block text-sm font-semibold mb-1">Event-Name <span className="text-red-500">*</span></label>
-                  <input
-                    type="text"
-                    value={newEvent.name}
-                    onChange={(e) => setNewEvent({...newEvent, name: e.target.value})}
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-lg font-medium ${
-                      isDarkMode 
-                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
-                        : 'bg-white border-gray-300 placeholder-gray-400'
-                    }`}
-                    placeholder="Kurzer, prägnanter Name für das Event"
-                    required
-                    maxLength={60}
-                  />
-                  {/* Inline error for name */}
-                  {(!newEvent.name || !newEvent.name.trim()) && (
-                    <span className="text-xs text-red-500 mt-1 block">Name ist erforderlich.</span>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold mb-1">Beschreibung <span className="text-red-500">*</span></label>
-                  <textarea
-                    value={newEvent.description}
-                    onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-base ${
-                      isDarkMode 
-                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
-                        : 'bg-white border-gray-300 placeholder-gray-400'
-                    }`}
-                    rows="3"
-                    placeholder="Was passiert in diesem Event?"
-                    required
-                  />
-                  {(!newEvent.description || !newEvent.description.trim()) && (
-                    <span className="text-xs text-red-500 mt-1 block">Beschreibung ist erforderlich.</span>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold mb-1">Ort</label>
-                  <input
-                    type="text"
-                    value={newEvent.location}
-                    onChange={(e) => setNewEvent({...newEvent, location: e.target.value})}
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-base ${
-                      isDarkMode 
-                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
-                        : 'bg-white border-gray-300 placeholder-gray-400'
-                    }`}
-                    placeholder="Wo findet das Event statt?"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold mb-1 flex items-center gap-1">Tags
-                    <span className="text-xs text-gray-400 ml-1">(optional, z.B. Charaktere, Orte, Themen)</span>
-                  </label>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {newEvent.tags.map((tag, index) => (
-                      <span
-                        key={index}
-                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border transition-colors ${
-                          isDarkMode 
-                            ? 'bg-blue-800/50 text-blue-200 border-blue-600' 
-                            : 'bg-blue-100 text-blue-800 border-blue-200'
-                        }`}
-                      >
-                        <Tag className="w-3 h-3" />
-                        {tag}
-                        <button
-                          type="button"
-                          onClick={() => removeTagFromNewEvent(tag)}
-                          className="hover:text-red-500 ml-1 focus:outline-none"
-                          tabIndex={0}
-                          aria-label={`Tag ${tag} entfernen`}
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={newEvent._tagInput || ''}
-                      onChange={e => setNewEvent({ ...newEvent, _tagInput: e.target.value })}
-                      onKeyDown={e => {
-                        if ((e.key === 'Enter' || e.key === ',') && newEvent._tagInput?.trim()) {
-                          e.preventDefault();
-                          const tag = newEvent._tagInput.trim();
-                          if (tag && !newEvent.tags.includes(tag)) {
-                            setNewEvent(prev => ({ ...prev, tags: [...prev.tags, tag], _tagInput: '' }));
-                          }
-                        }
-                        if (e.key === 'Backspace' && !newEvent._tagInput && newEvent.tags.length > 0) {
-                          setNewEvent(prev => ({ ...prev, tags: prev.tags.slice(0, -1) }));
-                        }
-                      }}
-                      className={`flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-base ${
-                        isDarkMode 
-                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
-                          : 'bg-white border-gray-300 placeholder-gray-400'
-                      }`}
-                      placeholder="Neuen Tag eingeben und Enter drücken..."
-                      list="tag-suggestions"
-                    />
-                    <datalist id="tag-suggestions">
-                      {allTags.filter(tag => !newEvent.tags.includes(tag)).map(tag => (
-                        <option key={tag} value={tag} />
-                      ))}
-                    </datalist>
-                  </div>
-                </div>
-              </div>
-
-              {/* Event Preview */}
-              <div className="mt-6 p-4 rounded-xl border bg-gradient-to-br from-blue-50/60 to-indigo-50/40 dark:from-gray-900/60 dark:to-gray-800/40">
-                <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="w-4 h-4 text-blue-500" />
-                  <span className="font-semibold">{newEvent.entry_date || 'Datum wählen'}</span>
-                  <Clock className="w-4 h-4 text-blue-500 ml-4" />
-                  <span className="font-semibold">{newEvent.entry_time || 'Zeit wählen'}</span>
-                  {newEvent.hasEndDateTime && newEvent.end_date && newEvent.end_time && (
-                    <>
-                      <span className="mx-2 text-gray-400">bis</span>
-                      <Calendar className="w-4 h-4 text-blue-400" />
-                      <span className="font-semibold">{newEvent.end_date}</span>
-                      <Clock className="w-4 h-4 text-blue-400 ml-2" />
-                      <span className="font-semibold">{newEvent.end_time}</span>
-                    </>
-                  )}
-                </div>
-                <div className="text-lg font-bold mb-1">{newEvent.name || <span className="italic text-gray-400">(Kein Name)</span>}</div>
-                <div className="text-base mb-1">{newEvent.description || <span className="italic text-gray-400">(Keine Beschreibung)</span>}</div>
-                {newEvent.location && (
-                  <div className="flex items-center gap-2 text-sm text-blue-700 dark:text-blue-300 mb-1">
-                    <MapPin className="w-4 h-4" /> {newEvent.location}
-                  </div>
-                )}
-                {newEvent.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {newEvent.tags.map((tag, i) => (
-                      <span key={i} className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border border-blue-300 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700">
-                        <Tag className="w-3 h-3" /> {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex justify-end gap-3 pt-6">
-                <button
-                  type="button"
-                  onClick={() => setShowAddForm(false)}
-                  className={`px-4 py-2 rounded-lg transition-colors font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    isDarkMode 
-                      ? 'text-gray-300 hover:bg-gray-700' 
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  Abbrechen
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  Event hinzufügen
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

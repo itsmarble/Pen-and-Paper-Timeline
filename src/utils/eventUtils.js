@@ -125,7 +125,27 @@ export class OptimizedEvent {
         matches.push({ type: 'exact_phrase', value: searchTerm, field: 'combined', score: 150 });
       }
       if (normalizedQuery.length < 3) totalScore *= 0.5;
-      if (totalScore === 0 && searchTerm.trim()) return { score: 0, matches: [] };
+      // --- SUPER-FUZZY FALLBACK: If totalScore is 0, try aggressive fallback ---
+      if (totalScore === 0 && searchTerm.trim()) {
+        // Try to find the minimum edit distance to any word in any field
+        const allWords = [searchableData.name, searchableData.description, searchableData.location, ...(this.tags || [])]
+          .join(' ').split(/\s+/).filter(Boolean);
+        let minDistance = Infinity;
+        let bestWord = '';
+        for (const word of allWords) {
+          const normWord = this.normalizeText(word);
+          const dist = this.levenshteinDistance(normWord, normalizedQuery);
+          if (dist < minDistance) {
+            minDistance = dist;
+            bestWord = word;
+          }
+        }
+        // If the minimum edit distance is reasonably close, give a low but nonzero score
+        if (minDistance < Math.max(4, Math.floor(normalizedQuery.length * 0.5))) {
+          totalScore = 0.12 * maxScore * (1 - minDistance / Math.max(normalizedQuery.length, 1));
+          matches.push({ type: 'super_fuzzy', value: searchTerm, matched: bestWord, distance: minDistance, score: totalScore });
+        }
+      }
     }
     const normalizedScore = Math.min(totalScore / maxScore, 1);
     const adjustedScore = normalizedScore > 0 ? Math.log10(normalizedScore * 9 + 1) : 0;
@@ -480,7 +500,6 @@ export class EventCollection {
             finalScore *= (1 + (30 - daysDiff) / 30 * 0.2);
           }
         }
-        
         scoredEvents.push({
           event,
           score: finalScore,
@@ -488,6 +507,42 @@ export class EventCollection {
         });
       }
     });
+
+    // --- SUPER-FUZZY FALLBACK: Wenn keine oder sehr wenige Ergebnisse, mache einen zweiten, noch toleranteren Durchlauf ---
+    if (scoredEvents.length < 2 && searchTerm.trim().length > 2) {
+      const fallbackEvents = [];
+      this.events.forEach(event => {
+        // Führe getSearchScore mit leerem searchTerm aus, aber prüfe Levenshtein-Distanz von Query zu jedem Wort in allen Feldern
+        const searchableData = event.getSearchableText();
+        const allWords = [searchableData.name, searchableData.description, searchableData.location, ...(event.tags || [])]
+          .join(' ').split(/\s+/).filter(Boolean);
+        let minDistance = Infinity;
+        let bestWord = '';
+        const normQuery = event.normalizeText(searchTerm);
+        for (const word of allWords) {
+          const normWord = event.normalizeText(word);
+          const dist = event.levenshteinDistance(normWord, normQuery);
+          if (dist < minDistance) {
+            minDistance = dist;
+            bestWord = word;
+          }
+        }
+        if (minDistance < Math.max(4, Math.floor(normQuery.length * 0.5))) {
+          // Score ist absichtlich niedrig, aber >0
+          const fallbackScore = 0.10 + 0.25 * (1 - minDistance / Math.max(normQuery.length, 1));
+          fallbackEvents.push({
+            event,
+            score: fallbackScore,
+            matchDetails: [{ type: 'super_fuzzy_fallback', value: searchTerm, matched: bestWord, distance: minDistance, score: fallbackScore }]
+          });
+        }
+      });
+      // Füge Fallback-Events hinzu, die noch nicht in scoredEvents sind
+      const existingIds = new Set(scoredEvents.map(e => e.event.id));
+      fallbackEvents.forEach(fb => {
+        if (!existingIds.has(fb.event.id)) scoredEvents.push(fb);
+      });
+    }
 
     // Sort results
     if (sortBy === 'relevance') {

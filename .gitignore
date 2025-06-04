@@ -7,18 +7,79 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Dependency directories
+node_modules/
+
+# Build output
+/dist/
+/dist-ssr/
+
+# Local environment files
 *.local
 
 # Editor directories and files
-.vscode/*
+.vscode/
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# OS generated files
+Thumbs.db
+Desktop.ini
+
+# Electron build output
+/build/
+/dist-electron/
+
+# Large media and asset files
+*.mp4
+*.mp3
+*.mov
+*.avi
+*.mkv
+*.wav
+*.flac
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.svg
+*.pdf
+
+# Database and data dumps
+*.sqlite
+*.db
+*.bak
+*.csv
+*.tsv
+*.jsonl
+
+# Archives and backups
+*.zip
+*.tar
+*.gz
+*.rar
+*.7z
+*.tgz
+*.tar.gz
+
+# Temp and cache
+*.tmp
+*.temp
+.cache/
+cache/
+.pytest_cache/
+.next/
+.nuxt/
+.parcel-cache/
+
+# Output and export folders
+/output/
+export/
+coverage/
+public/

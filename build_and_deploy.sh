@@ -31,6 +31,10 @@ function fail() { echo "${RED}❌ $1${NC}"; }
 
 info "Starte sauberen Rebuild und Deployment für $APP_NAME ..."
 
+# 0. Laufende Instanzen der App beenden
+info "Beende laufende Instanzen von $APP_NAME falls vorhanden ..."
+pgrep -x "Pen & Paper Timeline" | xargs -r kill && success "Alle laufenden Instanzen wurden beendet." || info "Keine laufenden Instanzen gefunden."
+
 # 1. App im Programme-Ordner entfernen
 if [ -d "$DEST_APP_PATH" ]; then
   info "Entferne alte Version in $DEST_APP_PATH ..."
