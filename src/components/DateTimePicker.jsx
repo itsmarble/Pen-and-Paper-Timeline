@@ -230,7 +230,8 @@ const DateTimePicker = ({
       <div className="grid grid-cols-2 gap-4">
         {/* Date Picker */}
         <div className="relative" ref={datePickerRef}>
-          <div
+          <button
+            type="button"
             onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
             className={baseInputClass}
           >
@@ -254,7 +255,7 @@ const DateTimePicker = ({
                 isDatePickerOpen ? 'rotate-180 text-blue-500' : 'text-gray-400'
               }`} />
             </div>
-          </div>
+          </button>
           
           {isDatePickerOpen && (
             <div className={calendarDropdownClass}>
@@ -341,7 +342,8 @@ const DateTimePicker = ({
 
         {/* Time Picker */}
         <div className="relative" ref={timePickerRef}>
-          <div
+          <button
+            type="button"
             onClick={() => setIsTimePickerOpen(!isTimePickerOpen)}
             className={baseInputClass}
           >
@@ -365,7 +367,7 @@ const DateTimePicker = ({
                 isTimePickerOpen ? 'rotate-180 text-indigo-500' : 'text-gray-400'
               }`} />
             </div>
-          </div>
+          </button>
           
           {isTimePickerOpen && (
             <div className={dropdownClass}>
@@ -378,25 +380,26 @@ const DateTimePicker = ({
                   const isEvening = hour >= 18 && hour < 22;
                   
                   return (
-                    <div
+                    <button
+                      type="button"
                       key={timeOption}
                       onClick={() => {
                         onTimeChange(timeOption);
                         setIsTimePickerOpen(false);
                       }}
                       className={`px-4 py-3 mx-1 cursor-pointer transition-all duration-200 flex items-center justify-between rounded-xl ${
-                        isSelected 
-                          ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg transform scale-[1.02]' 
-                          : isDarkMode 
-                            ? 'hover:bg-gray-700/70 text-gray-200 hover:text-white' 
+                        isSelected
+                          ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg transform scale-[1.02]'
+                          : isDarkMode
+                            ? 'hover:bg-gray-700/70 text-gray-200 hover:text-white'
                             : 'hover:bg-indigo-50 text-gray-900 hover:text-indigo-700'
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-mono font-medium">{timeOption}</span>
                         <span className={`text-xs px-2 py-1 rounded-full ${
-                          isSelected 
-                            ? 'bg-white/20 text-white' 
+                          isSelected
+                            ? 'bg-white/20 text-white'
                             : isNightTime 
                               ? isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'
                               : isMorning 
@@ -408,7 +411,7 @@ const DateTimePicker = ({
                           {isNightTime ? '🌙' : isMorning ? '🌅' : isEvening ? '🌆' : '☀️'}
                         </span>
                       </div>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
@@ -441,7 +444,8 @@ const DateTimePicker = ({
           <div className="grid grid-cols-2 gap-4">
             {/* End Date Picker */}
             <div className="relative" ref={endDatePickerRef}>
-              <div
+              <button
+                type="button"
                 onClick={() => setIsEndDatePickerOpen(!isEndDatePickerOpen)}
                 className={baseInputClass}
               >
@@ -465,7 +469,7 @@ const DateTimePicker = ({
                     isEndDatePickerOpen ? 'rotate-180 text-green-500' : 'text-gray-400'
                   }`} />
                 </div>
-              </div>
+              </button>
               
               {isEndDatePickerOpen && (
                 <div className={calendarDropdownClass}>
@@ -560,7 +564,8 @@ const DateTimePicker = ({
 
             {/* End Time Picker */}
             <div className="relative" ref={endTimePickerRef}>
-              <div
+              <button
+                type="button"
                 onClick={() => setIsEndTimePickerOpen(!isEndTimePickerOpen)}
                 className={baseInputClass}
               >
@@ -584,7 +589,7 @@ const DateTimePicker = ({
                     isEndTimePickerOpen ? 'rotate-180 text-green-500' : 'text-gray-400'
                   }`} />
                 </div>
-              </div>
+              </button>
               
               {isEndTimePickerOpen && (
                 <div className={dropdownClass}>
@@ -597,25 +602,26 @@ const DateTimePicker = ({
                       const isEvening = hour >= 18 && hour < 22;
                       
                       return (
-                        <div
+                        <button
+                          type="button"
                           key={timeOption}
                           onClick={() => {
                             onEndTimeChange(timeOption);
                             setIsEndTimePickerOpen(false);
                           }}
                           className={`px-4 py-3 mx-1 cursor-pointer transition-all duration-200 flex items-center justify-between rounded-xl ${
-                            isSelected 
-                              ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg transform scale-[1.02]' 
-                              : isDarkMode 
-                                ? 'hover:bg-gray-700/70 text-gray-200 hover:text-white' 
+                            isSelected
+                              ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg transform scale-[1.02]'
+                              : isDarkMode
+                                ? 'hover:bg-gray-700/70 text-gray-200 hover:text-white'
                                 : 'hover:bg-green-50 text-gray-900 hover:text-green-700'
                           }`}
                         >
                           <div className="flex items-center gap-3">
                             <span className="text-sm font-mono font-medium">{timeOption}</span>
                             <span className={`text-xs px-2 py-1 rounded-full ${
-                              isSelected 
-                                ? 'bg-white/20 text-white' 
+                              isSelected
+                                ? 'bg-white/20 text-white'
                                 : isNightTime 
                                   ? isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'
                                   : isMorning 
@@ -627,7 +633,7 @@ const DateTimePicker = ({
                               {isNightTime ? '🌙' : isMorning ? '🌅' : isEvening ? '🌆' : '☀️'}
                             </span>
                           </div>
-                        </div>
+                        </button>
                       );
                     })}
                   </div>
