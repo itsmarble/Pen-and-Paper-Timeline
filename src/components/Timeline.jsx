@@ -617,6 +617,7 @@ const Timeline = () => {
                   isDarkMode ? 'text-gray-400' : 'text-gray-500'
                 }`} />
                 <input
+                  id="timeline-search-input"
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -627,6 +628,13 @@ const Timeline = () => {
                       : 'bg-white border-gray-300 placeholder-gray-500'
                   }`}
                   title="🚀 Ultra-Intelligente Suche: Fuzzy-Matching • Levenshtein & Jaro-Winkler • Soundex • Deutsche Normalisierung • Phrase-Matching • N-Gram-Analyse • Multi-Feld-Scoring (Name:400%, Beschreibung:250%, Ort:200%, Tags:150%) • Echtzeit-Suggestions"
+                  aria-label="Suchfeld"
+                  aria-controls="search-suggestion-list"
+                  aria-activedescendant={
+                    focusedSuggestionIndex >= 0
+                      ? `suggestion-${focusedSuggestionIndex}`
+                      : undefined
+                  }
                   onFocus={() => setIsSearchFocused(true)}
                   onBlur={() => setIsSearchFocused(false)}
                   onKeyDown={handleSearchKeyDown}
@@ -634,37 +642,43 @@ const Timeline = () => {
                 
                 {/* Search Suggestions Dropdown */}
                 {searchSuggestions.length > 0 && searchTerm.length >= 2 && (
-                  <div className={`absolute top-full left-0 right-0 mt-1 border rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto ${
-                    isDarkMode 
-                      ? 'bg-gray-800 border-gray-600' 
-                      : 'bg-white border-gray-200'
-                  }`}>
+                  <div
+                    className={`absolute top-full left-0 right-0 mt-1 border rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto ${
+                      isDarkMode
+                        ? 'bg-gray-800 border-gray-600'
+                        : 'bg-white border-gray-200'
+                    }`}
+                  >
                     <div className="p-2">
-                      <div className={`text-xs font-medium mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        💡 Vorschläge:
-                      </div>
-                      {searchSuggestions.map((suggestion, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setSearchTerm(suggestion)}
-                          className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                            isDarkMode
-                              ? index === focusedSuggestionIndex
-                                ? 'bg-gray-700 text-white'
-                                : 'hover:bg-gray-700 text-gray-200'
-                              : index === focusedSuggestionIndex
-                                ? 'bg-gray-200'
-                                : 'hover:bg-gray-50 text-gray-800'
-                          }`}
-                          aria-selected={focusedSuggestionIndex === index}
-                          aria-label={`Vorschlag ${suggestion}`}
-                        >
-                          <span className="flex items-center gap-2">
-                            <Search className="w-3 h-3 opacity-50" />
-                            {suggestion}
-                          </span>
-                        </button>
-                      ))}
+                      <div className={`text-xs font-medium mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>💡 Vorschläge:</div>
+                      <ul id="search-suggestion-list" role="listbox">
+                        {searchSuggestions.map((suggestion, index) => (
+                          <li key={index} className="mb-1 last:mb-0">
+                            <button
+                              type="button"
+                              id={`suggestion-${index}`}
+                              role="option"
+                              onClick={() => setSearchTerm(suggestion)}
+                              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                                isDarkMode
+                                  ? index === focusedSuggestionIndex
+                                    ? 'bg-gray-700 text-white'
+                                    : 'hover:bg-gray-700 text-gray-200'
+                                  : index === focusedSuggestionIndex
+                                    ? 'bg-gray-200'
+                                    : 'hover:bg-gray-50 text-gray-800'
+                              }`}
+                              aria-selected={focusedSuggestionIndex === index}
+                              aria-label={`Vorschlag ${suggestion}`}
+                            >
+                              <span className="flex items-center gap-2">
+                                <Search className="w-3 h-3 opacity-50" />
+                                {suggestion}
+                              </span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   </div>
                 )}
