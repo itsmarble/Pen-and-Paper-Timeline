@@ -152,7 +152,7 @@ const UnifiedTimeNavigator = ({
             <button
               key={unit}
               onClick={() => setActiveUnit(unit)}
-              className={`flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+              className={`flex items-center gap-1 px-4 py-2 rounded-xl text-base transition-colors border focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 isActive ? 'border ' : 'border border-transparent '
               }${getUnitColor(unit, isActive)}`}
               title={`${unitConfig.label} navigieren`}
@@ -169,7 +169,7 @@ const UnifiedTimeNavigator = ({
         {/* Fast backward */}
         <button
           onClick={() => navigateTime(-1, true)}
-          className={`p-2 rounded-lg transition-all group ${
+          className={`p-2 rounded-xl transition-all group focus:outline-none focus:ring-2 focus:ring-blue-400 ${
             isDarkMode 
               ? 'bg-gray-700/50 hover:bg-gray-600/70 text-gray-300 hover:text-white' 
               : 'bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800'
@@ -182,7 +182,7 @@ const UnifiedTimeNavigator = ({
         {/* Step backward */}
         <button
           onClick={() => navigateTime(-1)}
-          className={`p-2 rounded-lg transition-all group ${
+          className={`p-2 rounded-xl transition-all group focus:outline-none focus:ring-2 focus:ring-blue-400 ${
             isDarkMode 
               ? 'bg-gray-700/50 hover:bg-gray-600/70 text-gray-300 hover:text-white' 
               : 'bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800'
@@ -210,7 +210,7 @@ const UnifiedTimeNavigator = ({
         {/* Step forward */}
         <button
           onClick={() => navigateTime(1)}
-          className={`p-2 rounded-lg transition-all group ${
+          className={`p-2 rounded-xl transition-all group focus:outline-none focus:ring-2 focus:ring-blue-400 ${
             isDarkMode 
               ? 'bg-gray-700/50 hover:bg-gray-600/70 text-gray-300 hover:text-white' 
               : 'bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800'
@@ -223,7 +223,7 @@ const UnifiedTimeNavigator = ({
         {/* Fast forward */}
         <button
           onClick={() => navigateTime(1, true)}
-          className={`p-2 rounded-lg transition-all group ${
+          className={`p-2 rounded-xl transition-all group focus:outline-none focus:ring-2 focus:ring-blue-400 ${
             isDarkMode 
               ? 'bg-gray-700/50 hover:bg-gray-600/70 text-gray-300 hover:text-white' 
               : 'bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800'
@@ -243,7 +243,7 @@ const UnifiedTimeNavigator = ({
             onChange={(e) => setQuickJumpInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleQuickJump()}
             placeholder="Jahr..."
-            className={`w-20 px-2 py-1 text-sm rounded border ${
+            className={`w-20 px-2 py-1 text-sm rounded border focus:outline-none focus:ring-2 focus:ring-blue-400 ${
               isDarkMode 
                 ? 'bg-gray-700 border-gray-600 text-white' 
                 : 'bg-white border-gray-300 text-gray-900'
@@ -252,7 +252,7 @@ const UnifiedTimeNavigator = ({
           />
           <button
             onClick={handleQuickJump}
-            className={`px-3 py-1 text-xs rounded ${
+            className={`px-3 py-1 text-xs rounded focus:outline-none focus:ring-2 focus:ring-blue-400 ${
               isDarkMode 
                 ? 'bg-blue-600 text-white hover:bg-blue-700' 
                 : 'bg-blue-500 text-white hover:bg-blue-600'
@@ -265,7 +265,7 @@ const UnifiedTimeNavigator = ({
               setShowQuickJump(false);
               setQuickJumpInput('');
             }}
-            className={`px-2 py-1 text-xs rounded ${
+            className={`px-2 py-1 text-xs rounded focus:outline-none focus:ring-2 focus:ring-blue-400 ${
               isDarkMode 
                 ? 'bg-gray-600 text-gray-300 hover:bg-gray-700' 
                 : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
@@ -278,7 +278,7 @@ const UnifiedTimeNavigator = ({
         <div className="text-center mt-3">
           <button
             onClick={() => setShowQuickJump(true)}
-            className={`text-xs px-3 py-1 rounded transition-all ${
+            className={`text-xs px-3 py-1 rounded transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 ${
               isDarkMode 
                 ? 'text-gray-400 hover:text-gray-300 hover:bg-gray-700/50' 
                 : 'text-gray-600 hover:text-gray-700 hover:bg-gray-100'

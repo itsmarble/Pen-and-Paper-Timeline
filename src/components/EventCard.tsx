@@ -83,7 +83,7 @@ const EventCard = memo(({
           <div className="flex gap-2">
             <button
               onClick={() => onEdit(event)}
-              className={`p-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400/80 ${
+              className={`p-2 rounded-lg transition-colors ${
                 isDarkMode
                   ? 'hover:bg-gray-700 text-gray-300 hover:text-white'
                   : 'hover:bg-white/80 text-gray-500 hover:text-gray-700'
@@ -95,7 +95,7 @@ const EventCard = memo(({
             </button>
             <button
               onClick={() => onDelete(event.id)}
-              className={`p-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-400/80 ${
+              className={`p-2 rounded-lg transition-colors ${
                 isDarkMode
                   ? 'hover:bg-red-900/50 text-red-400 hover:text-red-300'
                   : 'hover:bg-red-50 text-red-500 hover:text-red-600'

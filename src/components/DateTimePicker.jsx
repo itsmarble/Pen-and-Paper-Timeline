@@ -17,7 +17,9 @@ const DateTimePicker = ({
   isDarkMode,
   currentGameTime = new Date(), // Add currentGameTime prop with fallback
   label = "Datum & Zeit",
-  required = false 
+  required = false,
+  inputClassName = '',
+  buttonClassName = ''
 }) => {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
@@ -175,8 +177,8 @@ const DateTimePicker = ({
 
   const dropdownClass = `absolute top-full left-0 mt-3 w-full border-2 rounded-2xl shadow-2xl z-50 max-h-64 overflow-hidden backdrop-blur-md transition-all duration-300 ${
     isDarkMode 
-      ? 'bg-gray-800/95 border-gray-600 shadow-gray-900/50 scrollbar-dark' 
-      : 'bg-white/95 border-gray-200 shadow-gray-900/10 scrollbar-light'
+      ? 'bg-gray-800/95 border-gray-600 shadow-gray-900/50' 
+      : 'bg-white/95 border-gray-200 shadow-gray-900/10'
   }`;
 
   const calendarDropdownClass = `absolute top-full left-0 mt-3 w-96 border-2 rounded-2xl shadow-2xl z-50 backdrop-blur-md transition-all duration-300 ${

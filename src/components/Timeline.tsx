@@ -22,9 +22,10 @@ import {
   ChevronsLeft,
   ChevronsRight
 } from 'lucide-react';
-import { EventCollection, EventValidator, EventFormatter, OptimizedEvent } from '../utils/eventUtils.js';
-import { EventMigration } from '../utils/migrationUtils.js';
-import { dataManager } from '../utils/electronDataManager.js';
+import type { EventData } from '../utils/eventUtils';
+import { EventCollection, EventValidator, EventFormatter, OptimizedEvent } from '../utils/eventUtils';
+import { EventMigration } from '../utils/migrationUtils';
+import { dataManager } from '../utils/electronDataManager';
 import EventCard from './EventCard';
 import EditEventForm from './EditEventForm';
 import DateTimePicker from './DateTimePicker';
@@ -38,11 +39,11 @@ import { VariableSizeList as List } from 'react-window';
 
 const Timeline = () => {
   // Initialize with empty collection, load data in useEffect
-  const [eventCollection, setEventCollection] = useState(() => new EventCollection([]));
+  const [eventCollection, setEventCollection] = useState<EventCollection>(() => new EventCollection([]));
 
   const [currentGameTime, setCurrentGameTime] = useState(new Date('2024-03-16T12:00:00'));
   const [isEditingTime, setIsEditingTime] = useState(false);
-  const [editingEvent, setEditingEvent] = useState(null);
+  const [editingEvent, setEditingEvent] = useState<OptimizedEvent | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
@@ -51,7 +52,7 @@ const Timeline = () => {
   const [notification, setNotification] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [autoSaveInterval, setAutoSaveInterval] = useState(1000);
-  const [newEvent, setNewEvent] = useState({
+  const [newEvent, setNewEvent] = useState<EventData>({
     name: '',
     entry_date: '',
     entry_time: '',
@@ -71,8 +72,9 @@ const Timeline = () => {
   const listRef = useRef(null);
   const sizeMap = useRef({});
   const [listHeight, setListHeight] = useState(600);
+  const [zoomLevel, setZoomLevel] = useState(1);
 
-  const getItemSize = index => sizeMap.current[index] || 300;
+  const getItemSize = index => (sizeMap.current[index] || 300) * zoomLevel;
 
   const setItemSize = (index, size) => {
     if (sizeMap.current[index] !== size) {
@@ -82,6 +84,12 @@ const Timeline = () => {
       }
     }
   };
+
+  useEffect(() => {
+    if (listRef.current) {
+      listRef.current.resetAfterIndex(0, true);
+    }
+  }, [zoomLevel]);
 
   useEffect(() => {
     const updateHeight = () => {
@@ -217,14 +225,8 @@ const Timeline = () => {
   }, [eventCollection, currentGameTime, autoSaveInterval, lastSavedData]);
 
   // Debounce searchTerm updates
-  const [isSearching, setIsSearching] = useState(false);
-
   useEffect(() => {
-    setIsSearching(true);
-    const handler = debounce((value) => {
-      setDebouncedSearchTerm(value);
-      setIsSearching(false);
-    }, 300);
+    const handler = debounce((value) => setDebouncedSearchTerm(value), 300);
     handler(searchTerm);
     return () => handler.cancel();
   }, [searchTerm]);
@@ -517,7 +519,7 @@ const Timeline = () => {
 
     const ref = useCallback(node => {
       if (node) {
-        const height = node.getBoundingClientRect().height;
+        const height = node.offsetHeight;
         setItemSize(index, height);
       }
     }, [index]);
@@ -532,8 +534,6 @@ const Timeline = () => {
               currentGameTime={currentGameTime}
               onSave={handleSaveEdit}
               onCancel={() => setEditingEvent(null)}
-              inputClassName="px-4 py-2 rounded-xl text-base"
-              buttonClassName="px-4 py-2 rounded-xl text-base"
             />
           </div>
         ) : (
@@ -573,8 +573,6 @@ const Timeline = () => {
           onAutoSaveIntervalChange={setAutoSaveInterval}
           onToggleDarkMode={toggleDarkMode}
           onClose={() => setShowSettings(false)}
-          inputClassName="px-4 py-2 rounded-xl text-base"
-          buttonClassName="px-4 py-2 rounded-xl text-base"
         />
       )}
 
@@ -631,7 +629,7 @@ const Timeline = () => {
                       <button
                         onClick={() => setIsEditingTime(true)}
                         className={`p-1 rounded transition-colors ${
-                          isDarkMode 
+                          isDarkMode
                             ? 'text-gray-400 hover:bg-gray-700 hover:text-white'
                             : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
                         }`}
@@ -639,10 +637,13 @@ const Timeline = () => {
                       >
                         <Edit3 className="w-4 h-4" />
                       </button>
+                      <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        Zoom: {Math.round(zoomLevel * 100)}%
+                      </span>
                     </div>
                   )}
-                </div>
               </div>
+            </div>
             </div>
 
             {/* Search, Filter and Controls */}
@@ -652,22 +653,13 @@ const Timeline = () => {
                 <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 z-10 ${
                   isDarkMode ? 'text-gray-400' : 'text-gray-500'
                 }`} />
-                {/* Lade-Indikator Spinner */}
-                {isSearching && (
-                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 z-10">
-                    <svg className="animate-spin h-5 w-5 text-blue-500 opacity-80" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                    </svg>
-                  </span>
-                )}
                 <input
                   id="timeline-search-input"
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Suche nach Ereignissen, Orten, Tags... (z.B. 'Goblin', 'Dorf', 'Kampf')"
-                  className={`pl-10 pr-10 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors w-full sm:w-96 ${
+                  placeholder="🧠 KI-Suche: Tippfehler-tolerant, Deutsche Umlaute, Teilwörter, Soundex, Multi-Feld..."
+                  className={`pl-10 pr-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors w-full sm:w-96 ${
                     isDarkMode
                       ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
                       : 'bg-white border-gray-300 placeholder-gray-500'
@@ -690,8 +682,8 @@ const Timeline = () => {
                   <div
                     className={`absolute top-full left-0 right-0 mt-1 border rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto ${
                       isDarkMode
-                        ? 'bg-gray-800 border-gray-600'
-                        : 'bg-white border-gray-200'
+                        ? 'glass-dark'
+                        : 'glass-light'
                     }`}
                   >
                     <div className="p-2">
@@ -704,15 +696,15 @@ const Timeline = () => {
                               id={`suggestion-${index}`}
                               role="option"
                               onClick={() => setSearchTerm(suggestion)}
-                              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors font-medium border ${
+                              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                                 isDarkMode
                                   ? index === focusedSuggestionIndex
-                                    ? 'bg-blue-500/80 text-white border-blue-400 shadow-md'
-                                    : 'hover:bg-gray-700 text-gray-200 border-transparent'
+                                    ? 'bg-gray-700 text-white'
+                                    : 'hover:bg-gray-700 text-gray-200'
                                   : index === focusedSuggestionIndex
-                                    ? 'bg-blue-100 text-blue-900 border-blue-400 shadow-md'
-                                    : 'hover:bg-gray-50 text-gray-800 border-transparent'
-                              } ${index === focusedSuggestionIndex ? 'font-bold' : ''}`}
+                                    ? 'bg-gray-200'
+                                    : 'hover:bg-gray-50 text-gray-800'
+                              }`}
                               aria-selected={focusedSuggestionIndex === index}
                               aria-label={`Vorschlag ${suggestion}`}
                             >
@@ -728,21 +720,23 @@ const Timeline = () => {
                   </div>
                 )}
                 
-                {/* Freundlicher Platzhalter/Tooltip */}
+                {/* Search Tips Tooltip */}
                 {searchTerm.length === 0 && isSearchFocused && (
-                  <div className={`absolute top-full left-0 right-0 mt-1 p-3 border rounded-xl shadow-lg text-sm ${
-                    isDarkMode 
-                      ? 'bg-gray-800/95 border-gray-600 text-gray-200' 
-                      : 'bg-blue-50/95 border-blue-200 text-blue-900'
-                  }`}>
-                    <div className="font-semibold mb-1">🔎 Suche nach Abenteuern, Orten, NPCs oder Tags!</div>
-                    <div className="mb-1">Tippe einfach drauf los – die Suche ist fehlertolerant, versteht Umlaute und findet auch Teilwörter.</div>
-                    <ul className="space-y-1 text-xs">
-                      <li>• <b>Gobblin Angrif</b> → <b>Goblin Angriff</b> (Fuzzy-Match)</li>
-                      <li>• <b>Händler</b> = <b>Haendler</b> (Deutsche Normalisierung)</li>
-                      <li>• <b>Prinz</b> findet <b>Prinzessin</b> (Teilwort-Suche)</li>
-                      <li>• <b>Schmidt</b> findet <b>Schmitt</b> (Soundex)</li>
-                      <li>• Kombiniere mit Tags für noch präzisere Ergebnisse!</li>
+                  <div
+                    className={`absolute top-full left-0 right-0 mt-1 p-3 border rounded-xl shadow-lg z-50 text-xs ${
+                      isDarkMode
+                        ? 'glass-dark text-gray-200'
+                        : 'glass-light text-gray-800'
+                    }`}
+                  >
+                    <div className="font-medium mb-1">🚀 KI-Powered Search Features:</div>
+                    <ul className="space-y-1">
+                      <li>• 🧠 "Gobblin Angrif" → "Goblin Angriff" (Fuzzy-Match)</li>
+                      <li>• 🇩🇪 "Händler" = "Haendler" (Deutsche Normalisierung)</li>
+                      <li>• 🔍 "Prinz" findet "Prinzessin" (Teilwort-Suche)</li>
+                      <li>• 🎯 Soundex: "Schmidt" findet "Schmitt"</li>
+                      <li>• ⚡ Multi-Feld mit intelligenter Gewichtung</li>
+                      <li>• 📊 Kombiniere mit Tag-Filtern für Präzision</li>
                     </ul>
                   </div>
                 )}
@@ -872,8 +866,9 @@ const Timeline = () => {
             currentTime={currentGameTime}
             onTimeChange={setCurrentGameTime}
             isDarkMode={isDarkMode}
-            className="mb-4"
-            buttonClassName="px-4 py-2 rounded-xl text-base"
+            compact={true}
+            showQuickJump={false}
+            className="relative z-20 mt-2"
           />
         </div>
       </div>
@@ -973,16 +968,30 @@ const Timeline = () => {
               )}
             </div>
           ) : (
-            <List
-              height={listHeight}
-              itemCount={filteredAndSortedEventsWithScores.length}
-              itemSize={getItemSize}
-              width="100%"
-              ref={listRef}
-              className="space-y-0 overflow-auto"
+            <div
+              onWheel={(e) => {
+                if (e.ctrlKey) {
+                  e.preventDefault();
+                  setZoomLevel((z) => {
+                    const next = z - e.deltaY * 0.001;
+                    return Math.min(2, Math.max(0.5, next));
+                  });
+                }
+              }}
             >
-              {Row}
-            </List>
+              <div style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'top left' }}>
+                <List
+                  height={listHeight / zoomLevel}
+                  itemCount={filteredAndSortedEventsWithScores.length}
+                  itemSize={getItemSize}
+                  width="100%"
+                  ref={listRef}
+                  className="space-y-0 overflow-auto"
+                >
+                  {Row}
+                </List>
+              </div>
+            </div>
           )}
         </div>
       </div>

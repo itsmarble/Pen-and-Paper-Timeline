@@ -4,7 +4,7 @@ import { X, Plus } from 'lucide-react';
 import DateTimePicker from './DateTimePicker';
 import { EventValidator } from '../utils/eventUtils';
 
-const EditEventForm = ({ event, isDarkMode, currentGameTime, onSave, onCancel }) => {
+const EditEventForm = ({ event, isDarkMode, currentGameTime, onSave, onCancel, inputClassName = '', buttonClassName = '' }) => {
   const [editData, setEditData] = useState({
     name: event.name || '',
     entry_date: event.entry_date || '',
@@ -106,11 +106,9 @@ const EditEventForm = ({ event, isDarkMode, currentGameTime, onSave, onCancel })
               type="text"
               value={editData.name || ''}
               onChange={(e) => setEditData({...editData, name: e.target.value})}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                isDarkMode 
-                  ? 'bg-gray-700 border-gray-600 text-white' 
-                  : 'bg-white border-gray-300'
-              }`}
+              className={`w-full border focus:ring-2 focus:ring-blue-500 focus:border-transparent ${inputClassName} ${isDarkMode 
+                ? 'bg-gray-700 border-gray-600 text-white' 
+                : 'bg-white border-gray-300'}`}
               placeholder="Kurzer, prägnanter Name für das Event"
               required
             />
@@ -131,6 +129,8 @@ const EditEventForm = ({ event, isDarkMode, currentGameTime, onSave, onCancel })
             isDarkMode={isDarkMode}
             label="Event-Zeit"
             required={true}
+            inputClassName="px-4 py-2 rounded-xl text-base"
+            buttonClassName="px-4 py-2 rounded-xl text-base"
           />
 
           <div>
@@ -138,11 +138,9 @@ const EditEventForm = ({ event, isDarkMode, currentGameTime, onSave, onCancel })
             <textarea
               value={editData.description}
               onChange={(e) => setEditData({...editData, description: e.target.value})}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                isDarkMode 
-                  ? 'bg-gray-700 border-gray-600 text-white' 
-                  : 'bg-white border-gray-300'
-              }`}
+              className={`w-full border focus:ring-2 focus:ring-blue-500 focus:border-transparent ${inputClassName} ${isDarkMode 
+                ? 'bg-gray-700 border-gray-600 text-white' 
+                : 'bg-white border-gray-300'}`}
               rows="3"
               placeholder="Detaillierte Beschreibung des Events"
               required
@@ -155,11 +153,9 @@ const EditEventForm = ({ event, isDarkMode, currentGameTime, onSave, onCancel })
               type="text"
               value={editData.location || ''}
               onChange={(e) => setEditData({...editData, location: e.target.value})}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                isDarkMode 
-                  ? 'bg-gray-700 border-gray-600 text-white' 
-                  : 'bg-white border-gray-300'
-              }`}
+              className={`w-full border focus:ring-2 focus:ring-blue-500 focus:border-transparent ${inputClassName} ${isDarkMode 
+                ? 'bg-gray-700 border-gray-600 text-white' 
+                : 'bg-white border-gray-300'}`}
               placeholder="Wo findet das Event statt?"
             />
           </div>
@@ -193,24 +189,20 @@ const EditEventForm = ({ event, isDarkMode, currentGameTime, onSave, onCancel })
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className={`flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                  isDarkMode 
-                    ? 'bg-gray-700 border-gray-600 text-white' 
-                    : 'bg-white border-gray-300'
-                }`}
+                className={`flex-1 border focus:ring-2 focus:ring-blue-500 focus:border-transparent ${inputClassName} ${isDarkMode 
+                  ? 'bg-gray-700 border-gray-600 text-white' 
+                  : 'bg-white border-gray-300'}`}
                 placeholder="Neuen Tag hinzufügen..."
               />
               <button
                 type="button"
                 onClick={addTag}
                 disabled={!newTag.trim()}
-                className={`px-3 py-2 rounded-lg transition-colors ${
-                  newTag.trim()
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : isDarkMode 
-                      ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                }`}
+                className={`${buttonClassName} ${newTag.trim()
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : isDarkMode 
+                    ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
               >
                 <Plus className="w-4 h-4" />
               </button>
@@ -221,17 +213,15 @@ const EditEventForm = ({ event, isDarkMode, currentGameTime, onSave, onCancel })
             <button
               type="button"
               onClick={onCancel}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                isDarkMode 
-                  ? 'text-gray-300 hover:bg-gray-700'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
+              className={`${buttonClassName} ${isDarkMode 
+                ? 'text-gray-300 hover:bg-gray-700'
+                : 'text-gray-600 hover:bg-gray-100'}`}
             >
               Abbrechen
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className={`${buttonClassName} bg-blue-600 text-white hover:bg-blue-700`}
             >
               Speichern
             </button>
