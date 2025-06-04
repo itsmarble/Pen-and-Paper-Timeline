@@ -45,6 +45,7 @@ A beautiful, modern timeline management application designed specifically for Du
 - **Smooth Animations**: Tasteful transitions and pulse effects
 - **Custom Scrollbars**: Beautiful scrolling experience
 - **Gradient Backgrounds**: Stunning visual appeal
+- **Fehlerabwehr**: ErrorBoundary fängt Laufzeitfehler ab und zeigt eine Meldung
 
 ### 📊 Campaign Statistics
 - **Current Events**: Shows what's happening now
