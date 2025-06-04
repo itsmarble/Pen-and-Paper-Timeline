@@ -59,6 +59,7 @@ const Timeline = () => {
     hasEndDateTime: false
   });
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [focusedSuggestionIndex, setFocusedSuggestionIndex] = useState(-1);
 
   // Load data on mount and set up auto-save
   useEffect(() => {
@@ -211,6 +212,10 @@ const Timeline = () => {
     return eventCollection.getSearchSuggestions(searchTerm, 8);
   }, [eventCollection, searchTerm]);
 
+  useEffect(() => {
+    setFocusedSuggestionIndex(-1);
+  }, [searchSuggestions, searchTerm]);
+
   // Search analytics for debugging and optimization
   const searchAnalytics = useMemo(() => {
     // Minimal analytics: count unique terms in all events
@@ -316,6 +321,21 @@ const Timeline = () => {
       showNotification('Fehler beim Öffnen des Datenordners!', 'error');
     }
   }, [showNotification]);
+
+  const handleSearchKeyDown = useCallback((e) => {
+    if (searchSuggestions.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setFocusedSuggestionIndex((prev) => (prev + 1) % searchSuggestions.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setFocusedSuggestionIndex((prev) => (prev - 1 + searchSuggestions.length) % searchSuggestions.length);
+    } else if (e.key === 'Enter' && focusedSuggestionIndex >= 0) {
+      e.preventDefault();
+      setSearchTerm(searchSuggestions[focusedSuggestionIndex]);
+      setFocusedSuggestionIndex(-1);
+    }
+  }, [searchSuggestions, focusedSuggestionIndex]);
 
   // Zeit-Navigation
   // Event-Management
@@ -589,13 +609,14 @@ const Timeline = () => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="🧠 KI-Suche: Tippfehler-tolerant, Deutsche Umlaute, Teilwörter, Soundex, Multi-Feld..."
                   className={`pl-10 pr-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors w-full sm:w-96 ${
-                    isDarkMode 
-                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                    isDarkMode
+                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
                       : 'bg-white border-gray-300 placeholder-gray-500'
                   }`}
                   title="🚀 Ultra-Intelligente Suche: Fuzzy-Matching • Levenshtein & Jaro-Winkler • Soundex • Deutsche Normalisierung • Phrase-Matching • N-Gram-Analyse • Multi-Feld-Scoring (Name:400%, Beschreibung:250%, Ort:200%, Tags:150%) • Echtzeit-Suggestions"
                   onFocus={() => setIsSearchFocused(true)}
                   onBlur={() => setIsSearchFocused(false)}
+                  onKeyDown={handleSearchKeyDown}
                 />
                 
                 {/* Search Suggestions Dropdown */}
@@ -614,10 +635,16 @@ const Timeline = () => {
                           key={index}
                           onClick={() => setSearchTerm(suggestion)}
                           className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                            isDarkMode 
-                              ? 'hover:bg-gray-700 text-gray-200' 
-                              : 'hover:bg-gray-50 text-gray-800'
+                            isDarkMode
+                              ? index === focusedSuggestionIndex
+                                ? 'bg-gray-700 text-white'
+                                : 'hover:bg-gray-700 text-gray-200'
+                              : index === focusedSuggestionIndex
+                                ? 'bg-gray-200'
+                                : 'hover:bg-gray-50 text-gray-800'
                           }`}
+                          aria-selected={focusedSuggestionIndex === index}
+                          aria-label={`Vorschlag ${suggestion}`}
                         >
                           <span className="flex items-center gap-2">
                             <Search className="w-3 h-3 opacity-50" />
@@ -689,11 +716,12 @@ const Timeline = () => {
                 <button
                   onClick={toggleDarkMode}
                   className={`p-2 rounded-xl transition-colors ${
-                    isDarkMode 
+                    isDarkMode
                       ? 'bg-gray-700 text-yellow-400 hover:bg-gray-600'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                   title={isDarkMode ? 'Hell-Modus (Ctrl+D)' : 'Dunkel-Modus (Ctrl+D)'}
+                  aria-label={isDarkMode ? 'Hell-Modus einschalten' : 'Dunkel-Modus einschalten'}
                 >
                   {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                 </button>
@@ -701,21 +729,23 @@ const Timeline = () => {
                 <button
                   onClick={exportData}
                   className={`p-2 rounded-xl transition-colors ${
-                    isDarkMode 
+                    isDarkMode
                       ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                   title="Daten exportieren (Ctrl+S)"
+                  aria-label="Daten exportieren"
                 >
                   <Download className="w-4 h-4" />
                 </button>
 
                 <label className={`p-2 rounded-xl cursor-pointer transition-colors ${
-                  isDarkMode 
+                  isDarkMode
                     ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
-                title="Daten importieren">
+                title="Daten importieren"
+                aria-label="Daten importieren">
                   <Upload className="w-4 h-4" />
                   <input
                     type="file"
@@ -728,11 +758,12 @@ const Timeline = () => {
                 <button
                   onClick={openDataFolder}
                   className={`p-2 rounded-xl transition-colors ${
-                    isDarkMode 
+                    isDarkMode
                       ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                   title="Datenordner öffnen"
+                  aria-label="Datenordner öffnen"
                 >
                   <Folder className="w-4 h-4" />
                 </button>
@@ -741,6 +772,7 @@ const Timeline = () => {
                   onClick={() => setShowAddForm(true)}
                   className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg shadow-blue-500/25"
                   title="Neues Event hinzufügen (Ctrl+N)"
+                  aria-label="Neues Event hinzufügen"
                 >
                   <Plus className="w-4 h-4" />
                   Event
