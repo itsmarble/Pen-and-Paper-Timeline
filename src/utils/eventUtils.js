@@ -438,11 +438,33 @@ export class EventCollection {
     this.events = events.map(event => event instanceof OptimizedEvent ? event : new OptimizedEvent(event));
     this._sortedByDate = null;
     this._tagCache = null;
+    this._lastChangeHash = this._computeHash();
   }
 
   _invalidateCache() {
     this._sortedByDate = null;
     this._tagCache = null;
+    this._lastChangeHash = this._computeHash();
+  }
+
+  _computeHash() {
+    // Simple hash: JSON.stringify all events, then hashCode
+    const json = JSON.stringify(this.events.map(e => e.toJSON()));
+    let hash = 0, i, chr;
+    for (i = 0; i < json.length; i++) {
+      chr = json.charCodeAt(i);
+      hash = ((hash << 5) - hash) + chr;
+      hash |= 0; // Convert to 32bit integer
+    }
+    return hash;
+  }
+
+  hasChangedSince(lastHash) {
+    return this._lastChangeHash !== lastHash;
+  }
+
+  getChangeHash() {
+    return this._lastChangeHash;
   }
 
   add(eventData) {
@@ -630,28 +652,52 @@ export class EventCollection {
       latest: new Date(Math.max(...dates))
     };
   }
+
+  clone() {
+    return new EventCollection(this.events.map(event => event.clone()));
+  }
+
+  toJSON() {
+    return this.events.map(event => event.toJSON());
+  }
 }
 
 export class EventValidator {
   static validateEvent(eventData) {
     const errors = [];
-    
+    // Name
     if (!eventData.name || eventData.name.trim().length === 0) {
       errors.push('Event name is required');
     }
-    
-    if (!eventData.entry_date) {
+    // Datum
+    if (!eventData.entry_date || eventData.entry_date.trim().length === 0) {
       errors.push('Event date is required');
     }
-    
-    if (!eventData.entry_time) {
+    // Zeit
+    if (!eventData.entry_time || eventData.entry_time.trim().length === 0) {
       errors.push('Event time is required');
     }
-    
+    // Beschreibung
     if (!eventData.description || eventData.description.trim().length === 0) {
       errors.push('Event description is required');
     }
-    
+    // Enddatum/-zeit falls hasEndDateTime aktiv
+    if (eventData.hasEndDateTime) {
+      if (!eventData.end_date || eventData.end_date.trim().length === 0) {
+        errors.push('End date is required when a time range is set');
+      }
+      if (!eventData.end_time || eventData.end_time.trim().length === 0) {
+        errors.push('End time is required when a time range is set');
+      }
+      // Endzeitpunkt muss nach Startzeitpunkt liegen
+      if (eventData.end_date && eventData.end_time && eventData.entry_date && eventData.entry_time) {
+        const start = new Date(`${eventData.entry_date}T${eventData.entry_time}`);
+        const end = new Date(`${eventData.end_date}T${eventData.end_time}`);
+        if (end <= start) {
+          errors.push('End date/time must be after start date/time');
+        }
+      }
+    }
     return {
       isValid: errors.length === 0,
       errors

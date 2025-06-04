@@ -63,6 +63,7 @@ const Timeline = () => {
   });
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [focusedSuggestionIndex, setFocusedSuggestionIndex] = useState(-1);
+  const [lastSavedData, setLastSavedData] = useState(null);
 
   // Load data on mount and set up auto-save
   useEffect(() => {
@@ -80,8 +81,7 @@ const Timeline = () => {
         const legacyData = await dataManager.readEvents();
         if (Array.isArray(legacyData) && legacyData.length > 0) {
           const migratedCollection = EventMigration.migrateLegacyEvents(legacyData);
-          setEventCollection(migratedCollection);
-          
+          setEventCollection(new EventCollection(migratedCollection.events));
           // Save migrated data as optimized format
           await dataManager.writeOptimizedEvents({
             version: "2.0.0",
@@ -167,17 +167,17 @@ const Timeline = () => {
   // Auto-save to persistent storage
   useEffect(() => {
     const saveData = async () => {
-      if (eventCollection.length > 0) {
+      // Change detection: only save if data changed
+      const currentData = JSON.stringify(eventCollection.toJSON());
+      if (currentData !== lastSavedData) {
         try {
           await dataManager.writeOptimizedEvents({
             version: "2.0.0",
             updatedAt: new Date().toISOString(),
             events: eventCollection.toJSON()
           });
-          
-          // Also save to legacy format for backward compatibility
           await dataManager.writeEvents(eventCollection.toJSON());
-          
+          setLastSavedData(currentData);
         } catch (error) {
           logger.error('Error saving data:', error);
           setNotification({
@@ -186,8 +186,6 @@ const Timeline = () => {
           });
         }
       }
-      
-      // Save non-critical data to localStorage
       localStorage.setItem('timeline-current-time', currentGameTime.toISOString());
       localStorage.setItem('timeline-autosave', autoSaveInterval.toString());
     };
@@ -195,7 +193,7 @@ const Timeline = () => {
     // Debounce saves to avoid too frequent writes
     const timeoutId = setTimeout(saveData, autoSaveInterval);
     return () => clearTimeout(timeoutId);
-  }, [eventCollection, currentGameTime, autoSaveInterval]);
+  }, [eventCollection, currentGameTime, autoSaveInterval, lastSavedData]);
 
   // Debounce searchTerm updates
   useEffect(() => {
@@ -309,6 +307,7 @@ const Timeline = () => {
     reader.onload = (e) => {
       try {
         const importedCollection = EventMigration.importFromJSON(e.target.result);
+        // importedCollection is already an EventCollection, so use as is
         setEventCollection(importedCollection);
         showNotification('Timeline erfolgreich importiert!');
       } catch (error) {
@@ -348,59 +347,54 @@ const Timeline = () => {
 
   // Zeit-Navigation
   // Event-Management
-  const handleAddEvent = useCallback(() => {
-    if (newEvent.name && newEvent.name.trim() && newEvent.entry_date && newEvent.entry_time && newEvent.description.trim()) {
-      // Validate end date/time if range is enabled
-      if (newEvent.hasEndDateTime && (!newEvent.end_date || !newEvent.end_time)) {
-        showNotification('Bitte End-Datum und End-Zeit ausfüllen!', 'error');
-        return;
-      }
-      
-      // Validate that end date/time is after start date/time
-      if (newEvent.hasEndDateTime) {
-        const startDateTime = new Date(`${newEvent.entry_date}T${newEvent.entry_time}`);
-        const endDateTime = new Date(`${newEvent.end_date}T${newEvent.end_time}`);
-        
-        if (endDateTime <= startDateTime) {
-          showNotification('End-Zeit muss nach der Start-Zeit liegen!', 'error');
-          return;
-        }
-      }
-      
-      const eventToAdd = {
-        id: Date.now(),
-        ...newEvent,
-        tags: newEvent.tags || []
-      };
-      
-      // Validate event data before adding
-      const validation = EventValidator.validateEvent(eventToAdd);
-      if (!validation.isValid) {
-        showNotification(`Event-Daten sind ungültig: ${validation.errors.join(', ')}`, 'error');
-        return;
-      }
-      
-      const newCollection = eventCollection.clone();
-      newCollection.add(eventToAdd);
-      setEventCollection(newCollection);
-      
-      setNewEvent({
-        name: '',
-        entry_date: '',
-        entry_time: '',
-        end_date: '',
-        end_time: '',
-        description: '',
-        location: '',
-        tags: [],
-        hasEndDateTime: false
-      });
-      setShowAddForm(false);
-      showNotification('Event erfolgreich hinzugefügt!');
-    } else {
-      showNotification('Bitte alle Pflichtfelder ausfüllen (Name, Datum, Zeit, Beschreibung)!', 'error');
+  const handleAddEvent = useCallback((eventDataFromForm) => {
+    // Use the event data from the form, not from newEvent state!
+    const eventToAdd = {
+      id: Date.now(),
+      ...eventDataFromForm,
+      tags: eventDataFromForm.tags || []
+    };
+
+    // Validate event data before adding (includes all required fields)
+    const validation = EventValidator.validateEvent(eventToAdd);
+    if (!validation.isValid) {
+      showNotification(`Event-Daten sind ungültig: ${validation.errors.join(', ')}`, 'error');
+      return;
     }
-  }, [newEvent, eventCollection, showNotification]);
+
+    // Validate end date/time if range is enabled (redundant, but keep for user-friendly error)
+    if (eventToAdd.hasEndDateTime && (!eventToAdd.end_date || !eventToAdd.end_time)) {
+      showNotification('Bitte End-Datum und End-Zeit ausfüllen!', 'error');
+      return;
+    }
+    // Validate that end date/time is after start date/time
+    if (eventToAdd.hasEndDateTime) {
+      const startDateTime = new Date(`${eventToAdd.entry_date}T${eventToAdd.entry_time}`);
+      const endDateTime = new Date(`${eventToAdd.end_date}T${eventToAdd.end_time}`);
+      if (endDateTime <= startDateTime) {
+        showNotification('End-Zeit muss nach der Start-Zeit liegen!', 'error');
+        return;
+      }
+    }
+
+    const newCollection = eventCollection.clone();
+    newCollection.add(eventToAdd);
+    setEventCollection(newCollection);
+
+    setNewEvent({
+      name: '',
+      entry_date: '',
+      entry_time: '',
+      end_date: '',
+      end_time: '',
+      description: '',
+      location: '',
+      tags: [],
+      hasEndDateTime: false
+    });
+    setShowAddForm(false);
+    showNotification('Event erfolgreich hinzugefügt!');
+  }, [eventCollection, showNotification]);
 
   const handleEditEvent = useCallback((event) => {
     setEditingEvent(event.id);

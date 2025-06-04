@@ -47,6 +47,13 @@ async function ensureDataDirectory() {
   }
 }
 
+// Helper for atomic file saving
+async function atomicWriteFile(targetPath, data) {
+  const tempPath = targetPath + '.tmp';
+  await fs.writeFile(tempPath, data);
+  await fs.rename(tempPath, targetPath);
+}
+
 // Initialize data files if they don't exist
 async function initializeDataFiles() {
   try {
@@ -55,11 +62,11 @@ async function initializeDataFiles() {
       const defaultEventsPath = path.join(__dirname, '..', 'src', 'data', 'events.json');
       if (existsSync(defaultEventsPath)) {
         const defaultEvents = await fs.readFile(defaultEventsPath, 'utf8');
-        await fs.writeFile(eventsFile, defaultEvents);
+        await atomicWriteFile(eventsFile, defaultEvents);
         log('info', 'Initialized events.json from default');
       } else {
         // Create empty events array if no default exists
-        await fs.writeFile(eventsFile, JSON.stringify([], null, 2));
+        await atomicWriteFile(eventsFile, JSON.stringify([], null, 2));
         log('info', 'Created empty events.json');
       }
     }
@@ -69,7 +76,7 @@ async function initializeDataFiles() {
       const defaultOptimizedPath = path.join(__dirname, '..', 'src', 'data', 'events-optimized.json');
       if (existsSync(defaultOptimizedPath)) {
         const defaultOptimized = await fs.readFile(defaultOptimizedPath, 'utf8');
-        await fs.writeFile(optimizedEventsFile, defaultOptimized);
+        await atomicWriteFile(optimizedEventsFile, defaultOptimized);
         log('info', 'Initialized events-optimized.json from default');
       } else {
         // Create empty optimized events structure
@@ -78,7 +85,7 @@ async function initializeDataFiles() {
           createdAt: new Date().toISOString(),
           events: []
         };
-        await fs.writeFile(optimizedEventsFile, JSON.stringify(emptyOptimized, null, 2));
+        await atomicWriteFile(optimizedEventsFile, JSON.stringify(emptyOptimized, null, 2));
         log('info', 'Created empty events-optimized.json');
       }
     }
@@ -91,7 +98,7 @@ async function initializeDataFiles() {
         autoBackup: true,
         maxBackups: 10
       };
-      await fs.writeFile(configFile, JSON.stringify(defaultConfig, null, 2));
+      await atomicWriteFile(configFile, JSON.stringify(defaultConfig, null, 2));
       log('info', 'Created default config.json');
     }
   } catch (error) {
@@ -110,7 +117,7 @@ async function createBackup() {
       optimizedEvents: existsSync(optimizedEventsFile) ? JSON.parse(await fs.readFile(optimizedEventsFile, 'utf8')) : { events: [] },
       config: existsSync(configFile) ? JSON.parse(await fs.readFile(configFile, 'utf8')) : {}
     };
-    await fs.writeFile(backupPath, JSON.stringify(backup, null, 2));
+    await atomicWriteFile(backupPath, JSON.stringify(backup, null, 2));
     log('info', 'Backup created at:', backupPath);
     // Clean up old backups (keep last 10)
     await cleanOldBackups();
@@ -373,7 +380,7 @@ ipcMain.handle('read-optimized-events', async () => {
 
 ipcMain.handle('write-events', async (event, events) => {
   try {
-    await fs.writeFile(eventsFile, JSON.stringify(events, null, 2));
+    await atomicWriteFile(eventsFile, JSON.stringify(events, null, 2));
     log('info', 'Wrote events.json');
     return true;
   } catch (error) {
@@ -384,7 +391,7 @@ ipcMain.handle('write-events', async (event, events) => {
 
 ipcMain.handle('write-optimized-events', async (event, optimizedEvents) => {
   try {
-    await fs.writeFile(optimizedEventsFile, JSON.stringify(optimizedEvents, null, 2));
+    await atomicWriteFile(optimizedEventsFile, JSON.stringify(optimizedEvents, null, 2));
     log('info', 'Wrote events-optimized.json');
     return true;
   } catch (error) {

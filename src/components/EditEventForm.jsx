@@ -2,16 +2,25 @@
 import React, { useState } from 'react';
 import { X, Plus } from 'lucide-react';
 import DateTimePicker from './DateTimePicker';
+import { EventValidator } from '../utils/eventUtils';
 
 const EditEventForm = ({ event, isDarkMode, currentGameTime, onSave, onCancel }) => {
   const [editData, setEditData] = useState({
-    ...event,
+    name: event.name || '',
+    entry_date: event.entry_date || '',
+    entry_time: event.entry_time || '',
+    description: event.description || '',
+    location: event.location || '',
     tags: event.tags || [],
     hasEndDateTime: event.hasEndDateTime || (event.end_date && event.end_time),
     end_date: event.end_date || '',
-    end_time: event.end_time || ''
+    end_time: event.end_time || '',
+    id: event.id,
+    created_at: event.created_at,
+    updated_at: event.updated_at
   });
   const [newTag, setNewTag] = useState('');
+  const [validationErrors, setValidationErrors] = useState([]);
 
   const addTag = () => {
     if (newTag.trim() && !editData.tags.includes(newTag.trim())) {
@@ -32,24 +41,28 @@ const EditEventForm = ({ event, isDarkMode, currentGameTime, onSave, onCancel })
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (editData.name?.trim() && editData.entry_date && editData.entry_time && editData.description.trim()) {
-      // Validate end date/time if range is enabled
-      if (editData.hasEndDateTime && (!editData.end_date || !editData.end_time)) {
+    // Use EventValidator for validation
+    const { isValid, errors } = EventValidator.validateEvent(editData);
+    if (!isValid) {
+      setValidationErrors(errors);
+      return;
+    }
+    // Validate end date/time if range is enabled
+    if (editData.hasEndDateTime && (!editData.end_date || !editData.end_time)) {
+      setValidationErrors(['Enddatum und Endzeit sind erforderlich, wenn ein Zeitraum angegeben ist.']);
+      return;
+    }
+    // Validate that end date/time is after start date/time
+    if (editData.hasEndDateTime) {
+      const startDateTime = new Date(`${editData.entry_date}T${editData.entry_time}`);
+      const endDateTime = new Date(`${editData.end_date}T${editData.end_time}`);
+      if (endDateTime <= startDateTime) {
+        setValidationErrors(['Endzeitpunkt muss nach dem Startzeitpunkt liegen.']);
         return;
       }
-      
-      // Validate that end date/time is after start date/time
-      if (editData.hasEndDateTime) {
-        const startDateTime = new Date(`${editData.entry_date}T${editData.entry_time}`);
-        const endDateTime = new Date(`${editData.end_date}T${editData.end_time}`);
-        
-        if (endDateTime <= startDateTime) {
-          return;
-        }
-      }
-      
-      onSave(editData);
     }
+    setValidationErrors([]);
+    onSave(editData);
   };
 
   const handleKeyPress = (e) => {
@@ -77,6 +90,16 @@ const EditEventForm = ({ event, isDarkMode, currentGameTime, onSave, onCancel })
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {validationErrors.length > 0 && (
+            <div className="bg-red-100 text-red-700 border border-red-300 rounded-lg px-3 py-2 mb-2 text-sm">
+              <ul className="list-disc pl-5">
+                {validationErrors.map((err, idx) => (
+                  <li key={idx}>{err}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium mb-1">Event-Name</label>
             <input

@@ -611,6 +611,25 @@ export class EventMigration {
     report += '</div>';
     return report;
   }
+
+  /**
+   * Compare two event arrays for deep equality (ignoring order)
+   * @param {Array} eventsA
+   * @param {Array} eventsB
+   * @returns {boolean}
+   */
+  static areEventsEqual(eventsA, eventsB) {
+    if (!Array.isArray(eventsA) || !Array.isArray(eventsB)) return false;
+    if (eventsA.length !== eventsB.length) return false;
+    // Compare sorted by id for stability
+    const sortById = arr => [...arr].sort((a, b) => String(a.id).localeCompare(String(b.id)));
+    const aSorted = sortById(eventsA);
+    const bSorted = sortById(eventsB);
+    for (let i = 0; i < aSorted.length; i++) {
+      if (JSON.stringify(aSorted[i]) !== JSON.stringify(bSorted[i])) return false;
+    }
+    return true;
+  }
 }
 
 /**
