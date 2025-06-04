@@ -672,8 +672,8 @@ const Timeline = () => {
                   <div
                     className={`absolute top-full left-0 right-0 mt-1 border rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto ${
                       isDarkMode
-                        ? 'bg-gray-800 border-gray-600'
-                        : 'bg-white border-gray-200'
+                        ? 'glass-dark'
+                        : 'glass-light'
                     }`}
                   >
                     <div className="p-2">
@@ -712,11 +712,13 @@ const Timeline = () => {
                 
                 {/* Search Tips Tooltip */}
                 {searchTerm.length === 0 && isSearchFocused && (
-                  <div className={`absolute top-full left-0 right-0 mt-1 p-3 border rounded-xl shadow-lg text-xs ${
-                    isDarkMode 
-                      ? 'bg-gray-800/95 border-gray-600 text-gray-300' 
-                      : 'bg-blue-50/95 border-blue-200 text-blue-800'
-                  }`}>
+                  <div
+                    className={`absolute top-full left-0 right-0 mt-1 p-3 border rounded-xl shadow-lg z-50 text-xs ${
+                      isDarkMode
+                        ? 'glass-dark text-gray-200'
+                        : 'glass-light text-gray-800'
+                    }`}
+                  >
                     <div className="font-medium mb-1">🚀 KI-Powered Search Features:</div>
                     <ul className="space-y-1">
                       <li>• 🧠 "Gobblin Angrif" → "Goblin Angriff" (Fuzzy-Match)</li>
@@ -856,6 +858,7 @@ const Timeline = () => {
             isDarkMode={isDarkMode}
             compact={true}
             showQuickJump={false}
+            className="relative z-20 mt-2"
           />
         </div>
       </div>
