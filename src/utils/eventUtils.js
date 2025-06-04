@@ -543,7 +543,7 @@ export class EventCollection {
         scoredEvents.push({
           event,
           score: finalScore,
-          matchDetails: includeScoring ? scoreResult.matchDetails : undefined
+          matches: includeScoring ? scoreResult.matches : undefined
         });
       }
     });
@@ -573,7 +573,7 @@ export class EventCollection {
           fallbackEvents.push({
             event,
             score: fallbackScore,
-            matchDetails: [{ type: 'super_fuzzy_fallback', value: searchTerm, matched: bestWord, distance: minDistance, score: fallbackScore }]
+            matches: [{ type: 'super_fuzzy_fallback', value: searchTerm, matched: bestWord, distance: minDistance, score: fallbackScore }]
           });
         }
       });
