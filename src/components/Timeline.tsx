@@ -626,22 +626,22 @@ const Timeline = () => {
                       <span className="font-medium">
                         Aktuelle Zeit: {currentGameTime.toLocaleDateString('de-DE')} {currentGameTime.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
                       </span>
-                  <button
-                    onClick={() => setIsEditingTime(true)}
-                    className={`p-1 rounded transition-colors ${
-                      isDarkMode
-                        ? 'text-gray-400 hover:bg-gray-700 hover:text-white'
-                        : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
-                    }`}
-                    title="Zeit bearbeiten"
-                  >
-                    <Edit3 className="w-4 h-4" />
-                  </button>
-                </div>
-                <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  Zoom: {Math.round(zoomLevel * 100)}%
-                </span>
-                )}
+                      <button
+                        onClick={() => setIsEditingTime(true)}
+                        className={`p-1 rounded transition-colors ${
+                          isDarkMode
+                            ? 'text-gray-400 hover:bg-gray-700 hover:text-white'
+                            : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                        }`}
+                        title="Zeit bearbeiten"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                      <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        Zoom: {Math.round(zoomLevel * 100)}%
+                      </span>
+                    </div>
+                  )}
               </div>
             </div>
             </div>
