@@ -14,7 +14,8 @@
     "electron-dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
     "build-electron": "npm run build && electron-builder",
     "build-mac": "npm run build && electron-builder --mac",
-    "dist": "npm run build && electron-builder --publish=never"
+    "dist": "npm run build && electron-builder --publish=never",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "dependencies": {
     "classnames": "^2.5.1",
@@ -42,7 +43,8 @@
     "postcss": "^8.5.3",
     "tailwindcss": "^4.1.8",
     "vite": "^6.3.5",
-    "wait-on": "^8.0.3"
+    "wait-on": "^8.0.3",
+    "jest": "^29.7.0"
   },
   "build": {
     "appId": "com.maxbohn.pen-paper-timeline",
