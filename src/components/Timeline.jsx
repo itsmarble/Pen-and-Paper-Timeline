@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -64,6 +64,7 @@ const Timeline = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [focusedSuggestionIndex, setFocusedSuggestionIndex] = useState(-1);
   const [lastSavedData, setLastSavedData] = useState(null);
+  const fileInputRef = useRef(null);
 
   // Load data on mount and set up auto-save
   useEffect(() => {
@@ -128,13 +129,11 @@ const Timeline = () => {
     // Set up menu listeners for Electron
     dataManager.setupMenuListeners({
       onNewEvent: () => setShowAddForm(true),
-      onImportEvents: async () => {
+      onImportEvents: () => {
         try {
-          // Handle import functionality
-          setNotification({
-            type: 'info',
-            message: 'Import-Funktion wird implementiert...'
-          });
+          if (fileInputRef.current) {
+            fileInputRef.current.click();
+          }
         } catch (error) {
           setNotification({
             type: 'error',
@@ -142,13 +141,9 @@ const Timeline = () => {
           });
         }
       },
-      onExportEvents: async () => {
+      onExportEvents: () => {
         try {
-          // Handle export functionality
-          setNotification({
-            type: 'info',
-            message: 'Export-Funktion wird implementiert...'
-          });
+          exportData();
         } catch (error) {
           setNotification({
             type: 'error',
@@ -764,6 +759,7 @@ const Timeline = () => {
                     type="file"
                     accept=".json"
                     onChange={importData}
+                    ref={fileInputRef}
                     className="hidden"
                   />
                 </label>
