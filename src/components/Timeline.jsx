@@ -602,7 +602,7 @@ const Timeline = () => {
                     ? 'bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent'
                     : 'bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent'
                 }`}>
-                  Campaign Timeline
+                  Kampagnen-Timeline
                 </h1>
                 <div className={`flex items-center gap-2 text-sm ${
                   isDarkMode ? 'text-gray-300' : 'text-gray-600'
@@ -846,7 +846,7 @@ const Timeline = () => {
                   aria-label="Neues Event hinzufügen"
                 >
                   <Plus className="w-4 h-4" />
-                  Event
+                  Neues Event
                 </button>
               </div>
             </div>
