@@ -3,7 +3,7 @@
   "created_at": "2025-05-29T12:00:00.000Z",
   "metadata": {
     "total_events": 7,
-    "tags": ["abenteuer", "ankunft", "arena", "erfolgn", "erkundung", "fest", "gefahr", "goblins", "information", "kampf", "neue-stadt", "npc", "quest", "reise", "ruine", "schatz", "turnier"],
+    "tags": ["abenteuer", "ankunft", "arena", "erfolg", "erkundung", "fest", "gefahr", "goblins", "information", "kampf", "neue-stadt", "npc", "quest", "reise", "ruine", "schatz", "turnier"],
     "date_range": {
       "start": "2024-03-15",
       "end": "2024-05-15"
