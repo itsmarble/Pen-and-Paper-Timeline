@@ -179,6 +179,23 @@ npm run build
 npm run preview
 ```
 
+## 🧪 Testing
+
+The project uses **Jest** together with **ts-jest** to run the TypeScript test
+suite. If Jest reports that `ts-jest` cannot be found, make sure dependencies
+are installed before running the tests.
+
+```bash
+# Install all dependencies (including ts-jest)
+npm install
+
+# Execute tests once
+npm test
+
+# Or watch files for changes
+npm test -- --watch
+```
+
 ## 🎯 Perfect For
 
 - **D&D Campaigns**: Track story events and sessions
