@@ -1,7 +1,36 @@
 // Event Utilities for Pen & Paper Timeline
 
+
+export interface EventData {
+  id?: number;
+  name?: string;
+  description?: string;
+  entry_date?: string;
+  entry_time?: string;
+  end_date?: string;
+  end_time?: string;
+  hasEndDateTime?: boolean;
+  location?: string;
+  tags?: string[];
+  created_at?: string;
+  updated_at?: string;
+}
+
 export class OptimizedEvent {
-  constructor(data = {}) {
+  id: number;
+  name: string;
+  description: string;
+  entry_date: string;
+  entry_time: string;
+  end_date: string;
+  end_time: string;
+  hasEndDateTime: boolean;
+  location: string;
+  tags: string[];
+  created_at: string;
+  updated_at: string;
+  _searchCache: any | null;
+  constructor(data: EventData = {}) {
     this.id = data.id || Date.now();
     this.name = data.name || '';
     this.description = data.description || '';
@@ -434,7 +463,11 @@ export class OptimizedEvent {
 }
 
 export class EventCollection {
-  constructor(events = []) {
+  events: OptimizedEvent[];
+  _sortedByDate: OptimizedEvent[] | null;
+  _tagCache: string[] | null;
+  _lastChangeHash: number;
+    constructor(events: (OptimizedEvent | EventData)[] = []) {
     this.events = events.map(event => event instanceof OptimizedEvent ? event : new OptimizedEvent(event));
     this._sortedByDate = null;
     this._tagCache = null;
@@ -467,14 +500,14 @@ export class EventCollection {
     return this._lastChangeHash;
   }
 
-  add(eventData) {
+  add(eventData: OptimizedEvent | EventData) {
     const event = eventData instanceof OptimizedEvent ? eventData : new OptimizedEvent(eventData);
     this.events.push(event);
     this._invalidateCache();
     return event;
   }
 
-  remove(id) {
+  remove(id: number) {
     const index = this.events.findIndex(event => event.id === id);
     if (index >= 0) {
       const removed = this.events.splice(index, 1)[0];
@@ -484,7 +517,7 @@ export class EventCollection {
     return null;
   }
 
-  update(id, data) {
+  update(id: number, data: Partial<EventData>) {
     const event = this.findById(id);
     if (event) {
       event.update(data);
@@ -494,7 +527,7 @@ export class EventCollection {
     return null;
   }
 
-  findById(id) {
+  findById(id: number) {
     return this.events.find(event => event.id === id);
   }
 

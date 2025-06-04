@@ -4,7 +4,8 @@ import { X, Plus } from 'lucide-react';
 import DateTimePicker from './DateTimePicker';
 import { EventValidator } from '../utils/eventUtils';
 
-const EditEventForm = ({ event, isDarkMode, currentGameTime, onSave, onCancel }) => {
+import type { EventData } from '../utils/eventUtils';
+const EditEventForm = ({ event, isDarkMode, currentGameTime, onSave, onCancel }: { event: EventData; isDarkMode: boolean; currentGameTime: Date; onSave: (data: EventData) => void; onCancel: () => void; }) => {
   const [editData, setEditData] = useState({
     name: event.name || '',
     entry_date: event.entry_date || '',

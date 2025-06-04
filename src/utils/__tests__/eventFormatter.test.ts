@@ -1,4 +1,4 @@
-import { EventFormatter } from '../eventUtils.js';
+import { EventFormatter } from '../eventUtils';
 
 describe('EventFormatter', () => {
   test('formatDateTime returns German formatted string', () => {

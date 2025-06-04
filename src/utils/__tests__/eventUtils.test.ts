@@ -1,4 +1,4 @@
-import { EventValidator } from '../eventUtils.js';
+import { EventValidator } from '../eventUtils';
 
 describe('EventValidator.validateEvent', () => {
   test('valid event returns isValid true', () => {

@@ -22,9 +22,10 @@ import {
   ChevronsLeft,
   ChevronsRight
 } from 'lucide-react';
-import { EventCollection, EventValidator, EventFormatter, OptimizedEvent } from '../utils/eventUtils.js';
-import { EventMigration } from '../utils/migrationUtils.js';
-import { dataManager } from '../utils/electronDataManager.js';
+import type { EventData } from '../utils/eventUtils';
+import { EventCollection, EventValidator, EventFormatter, OptimizedEvent } from '../utils/eventUtils';
+import { EventMigration } from '../utils/migrationUtils';
+import { dataManager } from '../utils/electronDataManager';
 import EventCard from './EventCard';
 import EditEventForm from './EditEventForm';
 import DateTimePicker from './DateTimePicker';
@@ -38,11 +39,11 @@ import { VariableSizeList as List } from 'react-window';
 
 const Timeline = () => {
   // Initialize with empty collection, load data in useEffect
-  const [eventCollection, setEventCollection] = useState(() => new EventCollection([]));
+  const [eventCollection, setEventCollection] = useState<EventCollection>(() => new EventCollection([]));
 
   const [currentGameTime, setCurrentGameTime] = useState(new Date('2024-03-16T12:00:00'));
   const [isEditingTime, setIsEditingTime] = useState(false);
-  const [editingEvent, setEditingEvent] = useState(null);
+  const [editingEvent, setEditingEvent] = useState<OptimizedEvent | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
@@ -51,7 +52,7 @@ const Timeline = () => {
   const [notification, setNotification] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [autoSaveInterval, setAutoSaveInterval] = useState(1000);
-  const [newEvent, setNewEvent] = useState({
+  const [newEvent, setNewEvent] = useState<EventData>({
     name: '',
     entry_date: '',
     entry_time: '',

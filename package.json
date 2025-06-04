@@ -7,7 +7,7 @@
   "homepage": "./",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsc && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "electron": "electron .",
@@ -44,7 +44,11 @@
     "postcss": "^8.5.3",
     "tailwindcss": "^4.1.8",
     "vite": "^6.3.5",
-    "wait-on": "^8.0.3"
+    "wait-on": "^8.0.3",
+    "typescript": "^5.4.2",
+    "@typescript-eslint/eslint-plugin": "^7.0.1",
+    "@typescript-eslint/parser": "^7.0.1",
+    "ts-jest": "^29.1.1"
   },
   "build": {
     "appId": "com.maxbohn.pen-paper-timeline",
