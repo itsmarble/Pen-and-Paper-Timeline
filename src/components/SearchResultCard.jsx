@@ -1,5 +1,5 @@
 import React from 'react';
-import { BadgeCheck, Search, Tag, Info, Star } from 'lucide-react';
+import { BadgeCheck, Search, Tag, Info, Star, Calendar, MapPin } from 'lucide-react';
 
 // Helper to highlight matched terms in text
 function highlightMatches(text, matches) {
@@ -85,6 +85,9 @@ const SearchResultCard = ({ event, matches = [], score = null, onClick }) => {
         {event.tags && event.tags.length > 0 && event.tags.map((tag, i) => (
           <span key={i} className="inline-flex items-center bg-blue-100 text-blue-800 rounded px-2 py-0.5 mr-1"><Tag size={12} className="mr-1" />{tag}</span>
         ))}
+        {event.entry_date && (
+          <span className="inline-flex items-center"><Calendar size={14} className="mr-1" />{event.entry_date} {event.entry_time}</span>
+        )}
       </div>
       <div className="flex flex-wrap gap-1 mt-1">
         {/* Show unique match types as badges */}
