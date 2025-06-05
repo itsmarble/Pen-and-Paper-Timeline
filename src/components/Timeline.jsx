@@ -654,6 +654,52 @@ const Timeline = () => {
         </div>
       )}
 
+      {/* Modal Overlay für EditEventForm (Bearbeiten) */}
+      {editingEvent !== null && (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-2xl mx-auto bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 relative border border-gray-200 dark:border-gray-700">
+            <EditEventForm
+              event={filteredAndSortedEventsWithScores.find(e => (e.event || e).id === editingEvent)?.event || filteredAndSortedEventsWithScores.find(e => (e.event || e).id === editingEvent) || {}}
+              isDarkMode={isDarkMode}
+              currentGameTime={currentGameTime}
+              onSave={handleSaveEdit}
+              onCancel={() => setEditingEvent(null)}
+              inputClassName="px-4 py-2 rounded-xl text-base"
+              buttonClassName="px-4 py-2 rounded-xl text-base"
+            />
+            <button
+              className="absolute top-4 right-4 p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-300"
+              onClick={() => setEditingEvent(null)}
+              aria-label="Schließen"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Overlay für EditEventForm (Neues Event) */}
+      {showAddForm && (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-2xl mx-auto bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 relative border border-gray-200 dark:border-gray-700">
+            <EditEventForm
+              event={newEvent}
+              isDarkMode={isDarkMode}
+              currentGameTime={currentGameTime}
+              onSave={handleAddEvent}
+              onCancel={() => setShowAddForm(false)}
+            />
+            <button
+              className="absolute top-4 right-4 p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-300"
+              onClick={() => setShowAddForm(false)}
+              aria-label="Schließen"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Sticky Header */}
       <div className={`sticky top-0 z-50 backdrop-blur-md border-b shadow-lg transition-colors duration-300 ${
         isDarkMode 
@@ -678,16 +724,18 @@ const Timeline = () => {
                   isDarkMode ? 'text-gray-300' : 'text-gray-600'
                 }`}>
                   {isEditingTime ? (
-                    <CurrentGameTimePicker
-                      currentTime={currentGameTime}
-                      onTimeChange={(newTime) => {
-                        setCurrentGameTime(newTime);
-                        setIsEditingTime(false);
-                        showNotification('Zeit erfolgreich geändert!');
-                      }}
-                      onCancel={() => setIsEditingTime(false)}
-                      isDarkMode={isDarkMode}
-                    />
+                    <div className="mt-2">
+                      <CurrentGameTimePicker
+                        currentTime={currentGameTime}
+                        onTimeChange={(newTime) => {
+                          setCurrentGameTime(newTime);
+                          setIsEditingTime(false);
+                          showNotification('Zeit erfolgreich geändert!');
+                        }}
+                        onCancel={() => setIsEditingTime(false)}
+                        isDarkMode={isDarkMode}
+                      />
+                    </div>
                   ) : (
                     <div className="flex items-center gap-4">
                       <span className="font-medium">

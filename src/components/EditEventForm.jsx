@@ -73,23 +73,25 @@ const EditEventForm = ({ event, isDarkMode, currentGameTime, onSave, onCancel, i
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
-      <div className={`rounded-2xl shadow-2xl max-w-md w-full p-6 transition-colors duration-300 ${
-        isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'
-      }`}>
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold">Event bearbeiten</h3>
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-md transition-all duration-300">
+      <div
+        className={`relative w-full max-w-lg md:max-w-xl lg:max-w-2xl mx-auto rounded-2xl shadow-2xl border border-blue-200/40 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white p-0 overflow-hidden animate-fadeInScale`}
+        style={{ boxShadow: '0 8px 40px 0 rgba(0,0,0,0.25)', zIndex: 201 }}
+      >
+        {/* Modal Header - more dialog-like, less like a banner */}
+        <div className="flex items-center gap-3 px-8 pt-8 pb-4 border-b-0">
+          <h3 className="text-2xl font-bold tracking-tight flex-1 text-center">
+            Event bearbeiten
+          </h3>
           <button
             onClick={onCancel}
-            className={`p-2 rounded-lg transition-colors ${
-              isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
-            }`}
+            className="p-2 rounded-full hover:bg-blue-100 dark:hover:bg-gray-700 transition-colors absolute top-6 right-6"
+            aria-label="Schließen"
           >
-            <X className="w-5 h-5" />
+            <X className="w-6 h-6" />
           </button>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5 px-8 py-8">
           {validationErrors.length > 0 && (
             <div className="bg-red-100 text-red-700 border border-red-300 rounded-lg px-3 py-2 mb-2 text-sm">
               <ul className="list-disc pl-5">
@@ -209,19 +211,19 @@ const EditEventForm = ({ event, isDarkMode, currentGameTime, onSave, onCancel, i
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex flex-col md:flex-row justify-end gap-3 pt-6">
             <button
               type="button"
               onClick={onCancel}
-              className={`${buttonClassName} ${isDarkMode 
-                ? 'text-gray-300 hover:bg-gray-700'
-                : 'text-gray-600 hover:bg-gray-100'}`}
+              className={`min-w-[120px] py-2 px-4 rounded-xl border border-gray-300 dark:border-gray-600 font-semibold transition-colors ${buttonClassName} ${isDarkMode 
+                ? 'text-gray-300 bg-gray-800 hover:bg-gray-700' 
+                : 'text-gray-600 bg-white hover:bg-gray-100'}`}
             >
               Abbrechen
             </button>
             <button
               type="submit"
-              className={`${buttonClassName} bg-blue-600 text-white hover:bg-blue-700`}
+              className={`min-w-[120px] py-2 px-4 rounded-xl font-semibold bg-blue-600 text-white hover:bg-blue-700 shadow ${buttonClassName}`}
             >
               Speichern
             </button>
