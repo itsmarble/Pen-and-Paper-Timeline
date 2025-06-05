@@ -73,7 +73,7 @@ const EditEventForm = ({ event, isDarkMode, currentGameTime, onSave, onCancel, i
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
       <div className={`rounded-2xl shadow-2xl max-w-md w-full p-6 transition-colors duration-300 ${
         isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'
       }`}>
