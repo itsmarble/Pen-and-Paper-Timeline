@@ -426,7 +426,7 @@ const Timeline = () => {
   }, [eventCollection, showNotification]);
 
   const handleEditEvent = useCallback((event) => {
-    setEditingEvent(event.id);
+    setEditingEvent(event);
   }, []);
 
   const handleSaveEdit = useCallback((updatedEvent) => {
@@ -526,6 +526,16 @@ const Timeline = () => {
           currentGameTime={currentGameTime}
           onSave={handleAddEvent}
           onCancel={() => setShowAddForm(false)}
+        />
+      )}
+
+      {editingEvent && (
+        <EditEventForm
+          event={editingEvent}
+          isDarkMode={isDarkMode}
+          currentGameTime={currentGameTime}
+          onSave={handleSaveEdit}
+          onCancel={() => setEditingEvent(null)}
         />
       )}
 
