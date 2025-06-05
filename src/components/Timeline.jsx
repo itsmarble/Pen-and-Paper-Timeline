@@ -655,7 +655,7 @@ const Timeline = () => {
       )}
 
       {/* Sticky Header */}
-      <div className={`sticky top-0 z-40 backdrop-blur-md border-b shadow-lg transition-colors duration-300 ${
+      <div className={`sticky top-0 z-50 backdrop-blur-md border-b shadow-lg transition-colors duration-300 ${
         isDarkMode 
           ? 'bg-gray-900/80 border-gray-700' 
           : 'bg-white/80 border-white/20'
