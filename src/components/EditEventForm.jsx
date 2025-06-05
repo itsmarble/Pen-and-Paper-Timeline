@@ -4,7 +4,7 @@ import { X, Plus } from 'lucide-react';
 import DateTimePicker from './DateTimePicker';
 import { EventValidator } from '../utils/eventUtils';
 
-const EditEventForm = ({ event, isDarkMode, currentGameTime, onSave, onCancel, inputClassName = '', buttonClassName = '' }) => {
+const EditEventForm = ({ event, isDarkMode, currentGameTime, onSave, onCancel, inputClassName = '', buttonClassName = '', mode = 'edit' }) => {
   const [editData, setEditData] = useState({
     name: event.name || '',
     entry_date: event.entry_date || '',
@@ -73,15 +73,15 @@ const EditEventForm = ({ event, isDarkMode, currentGameTime, onSave, onCancel, i
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-md transition-all duration-300">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 backdrop-blur-md transition-all duration-300">
       <div
         className={`relative w-full max-w-lg md:max-w-xl lg:max-w-2xl mx-auto rounded-2xl shadow-2xl border border-blue-200/40 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white p-0 overflow-hidden animate-fadeInScale`}
-        style={{ boxShadow: '0 8px 40px 0 rgba(0,0,0,0.25)', zIndex: 201 }}
+        style={{ boxShadow: '0 8px 40px 0 rgba(0,0,0,0.25)' }}
       >
         {/* Modal Header - more dialog-like, less like a banner */}
         <div className="flex items-center gap-3 px-8 pt-8 pb-4 border-b-0">
           <h3 className="text-2xl font-bold tracking-tight flex-1 text-center">
-            Event bearbeiten
+            {mode === 'edit' ? 'Event bearbeiten' : 'Neues Event erstellen'}
           </h3>
           <button
             onClick={onCancel}
