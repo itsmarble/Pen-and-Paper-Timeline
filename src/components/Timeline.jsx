@@ -20,7 +20,10 @@ import {
   Sun,
   Folder,
   ChevronsLeft,
-  ChevronsRight
+  ChevronsRight,
+  Star,
+  Target,
+  Zap
 } from 'lucide-react';
 import { EventCollection, EventValidator, EventFormatter, OptimizedEvent } from '../utils/eventUtils.js';
 import { EventMigration } from '../utils/migrationUtils.js';
@@ -66,6 +69,10 @@ const Timeline = () => {
   const [focusedSuggestionIndex, setFocusedSuggestionIndex] = useState(-1);
   const [lastSavedData, setLastSavedData] = useState(null);
   const fileInputRef = useRef(null);
+
+  // Enhanced search result filtering and sorting
+  const [sortBy, setSortBy] = useState('relevance');
+  const [quickFilter, setQuickFilter] = useState(null);
 
   // react-window refs and helpers
   const listRef = useRef(null);
@@ -232,13 +239,42 @@ const Timeline = () => {
   // Enhanced search and filtering using optimized event collection
   const filteredAndSortedEventsWithScores = useMemo(() => {
     // Use the advanced search with detailed options
-    return eventCollection.search(debouncedSearchTerm, selectedTags, {
+    let results = eventCollection.search(debouncedSearchTerm, selectedTags, {
       minScore: 0.05,
       maxResults: 200,
-      sortBy: 'relevance',
+      sortBy: sortBy === 'relevance' ? 'relevance' : 'date',
       includeScoring: true // <-- get scoring details for UI
     });
-  }, [eventCollection, debouncedSearchTerm, selectedTags]);
+
+    // Apply quick filter
+    if (quickFilter) {
+      results = results.filter(result => {
+        const event = result.event || result;
+        const status = getEventStatus(event);
+        return status === quickFilter;
+      });
+    }
+
+    // Apply additional sorting if not relevance-based
+    if (sortBy === 'name') {
+      results.sort((a, b) => {
+        const eventA = a.event || a;
+        const eventB = b.event || b;
+        return eventA.name.localeCompare(eventB.name);
+      });
+    } else if (sortBy === 'status') {
+      results.sort((a, b) => {
+        const eventA = a.event || a;
+        const eventB = b.event || b;
+        const statusA = getEventStatus(eventA);
+        const statusB = getEventStatus(eventB);
+        const statusOrder = { 'current': 0, 'future': 1, 'past': 2 };
+        return (statusOrder[statusA] || 3) - (statusOrder[statusB] || 3);
+      });
+    }
+
+    return results;
+  }, [eventCollection, debouncedSearchTerm, selectedTags, sortBy, quickFilter, currentGameTime]);
 
   // Get search suggestions for autocomplete
   const searchSuggestions = useMemo(() => {
@@ -513,7 +549,13 @@ const Timeline = () => {
   const Row = ({ index, style }) => {
     const result = filteredAndSortedEventsWithScores[index];
     const event = result.event || result;
+    const searchScore = result.score || 0;
+    const matches = result.matches || [];
+    const breakdown = result.breakdown || null;
     const status = getEventStatus(event);
+
+    // Extract matched fields from matches
+    const matchedFields = Array.from(new Set(matches.map(m => m.field)));
 
     const ref = useCallback(node => {
       if (node) {
@@ -537,13 +579,40 @@ const Timeline = () => {
             />
           </div>
         ) : (
-          <EventCard
-            event={event}
-            status={status}
-            isDarkMode={isDarkMode}
-            onEdit={handleEditEvent}
-            onDelete={handleDeleteEvent}
-          />
+          <div className="relative">
+            {/* Search relevance indicator */}
+            {searchTerm && (
+              <div className={`absolute -left-4 top-4 w-2 h-16 rounded-full ${
+                searchScore > 0.8 ? 'bg-green-500' : 
+                searchScore > 0.5 ? 'bg-yellow-500' : 'bg-gray-400'
+              }`} title={`Relevanz: ${Math.round(searchScore * 100)}%`} />
+            )}
+            
+            {/* Use enhanced SearchResultCard when search is active, EventCard otherwise */}
+            {searchTerm || selectedTags.length > 0 ? (
+              <SearchResultCard
+                event={event}
+                status={status}
+                isDarkMode={isDarkMode}
+                onEdit={handleEditEvent}
+                onDelete={handleDeleteEvent}
+                searchTerm={searchTerm}
+                searchScore={searchScore}
+                matchedFields={matchedFields}
+                matches={matches}
+                breakdown={breakdown}
+                onClick={() => {}}
+              />
+            ) : (
+              <EventCard
+                event={event}
+                status={status}
+                isDarkMode={isDarkMode}
+                onEdit={handleEditEvent}
+                onDelete={handleDeleteEvent}
+              />
+            )}
+          </div>
         )}
       </div>
     );
@@ -748,6 +817,67 @@ const Timeline = () => {
                 )}
               </div>
 
+              {/* Search result sorting and filtering */}
+              {(searchTerm || selectedTags.length > 0) && (
+                <div className="flex items-center gap-3 mt-3">
+                  {/* Sort dropdown */}
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className={`px-3 py-2 border rounded-lg text-sm ${
+                      isDarkMode
+                        ? 'bg-gray-700 border-gray-600 text-white'
+                        : 'bg-white border-gray-300'
+                    }`}
+                  >
+                    <option value="relevance">Nach Relevanz</option>
+                    <option value="date">Nach Datum</option>
+                    <option value="name">Nach Name</option>
+                    <option value="status">Nach Status</option>
+                  </select>
+
+                  {/* Quick filters */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setQuickFilter(quickFilter === 'current' ? null : 'current')}
+                      className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+                        quickFilter === 'current'
+                          ? 'bg-emerald-500 text-white'
+                          : isDarkMode
+                            ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      Aktuelle
+                    </button>
+                    <button
+                      onClick={() => setQuickFilter(quickFilter === 'future' ? null : 'future')}
+                      className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+                        quickFilter === 'future'
+                          ? 'bg-blue-500 text-white'
+                          : isDarkMode
+                            ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      Geplante
+                    </button>
+                    <button
+                      onClick={() => setQuickFilter(quickFilter === 'past' ? null : 'past')}
+                      className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+                        quickFilter === 'past'
+                          ? 'bg-gray-500 text-white'
+                          : isDarkMode
+                            ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      Vergangene
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Tag Filter */}
               {allTags.length > 0 && (
                 <div className="relative">
@@ -941,13 +1071,87 @@ const Timeline = () => {
 
         {/* Enhanced Search Results Info */}
         {(searchTerm || selectedTags.length > 0) && (
-          <div className={`mb-4 p-3 rounded-lg border text-xs ${isDarkMode ? 'bg-gray-900 border-gray-700 text-gray-300' : 'bg-gray-50 border-gray-200 text-gray-700'}`}
-               style={{maxWidth: 480}}>
-            <div className="font-semibold mb-1">🔍 Suchergebnis</div>
-            <ul className="list-disc pl-5">
-              <li>{filteredAndSortedEventsWithScores.length} von {eventCollection.length} Events gefunden</li>
-              <li>Gewichtung: Name &gt; Beschreibung &gt; Ort &gt; Tags</li>
-            </ul>
+          <div className={`mb-6 rounded-xl border shadow-sm ${
+            isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+          }`}>
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Search className="w-5 h-5 text-blue-500" />
+                  <h3 className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                    Suchergebnisse
+                  </h3>
+                </div>
+                <button
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSelectedTags([]);
+                  }}
+                  className={`text-sm px-3 py-1 rounded-lg transition-colors ${
+                    isDarkMode 
+                      ? 'text-gray-400 hover:bg-gray-700 hover:text-white' 
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  Zurücksetzen
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div className={`p-3 rounded-lg ${
+                  isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'
+                }`}>
+                  <div className="text-2xl font-bold text-blue-500">
+                    {filteredAndSortedEventsWithScores.length}
+                  </div>
+                  <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    von {eventCollection.length} Events
+                  </div>
+                </div>
+                
+                <div className={`p-3 rounded-lg ${
+                  isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'
+                }`}>
+                  <div className="text-2xl font-bold text-green-500">
+                    {Math.round((filteredAndSortedEventsWithScores.filter(r => r.score > 0.7).length / filteredAndSortedEventsWithScores.length) * 100) || 0}%
+                  </div>
+                  <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Hohe Relevanz
+                  </div>
+                </div>
+                
+                <div className={`p-3 rounded-lg ${
+                  isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'
+                }`}>
+                  <div className="text-2xl font-bold text-purple-500">
+                    {searchAnalytics.totalUniqueTerms}
+                  </div>
+                  <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Suchbare Begriffe
+                  </div>
+                </div>
+              </div>
+
+              {/* Active filters */}
+              <div className="flex flex-wrap gap-2">
+                {searchTerm && (
+                  <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm ${
+                    isDarkMode ? 'bg-blue-500/20 text-blue-300' : 'bg-blue-100 text-blue-800'
+                  }`}>
+                    <Search className="w-3 h-3" />
+                    "{searchTerm}"
+                  </div>
+                )}
+                {selectedTags.map(tag => (
+                  <div key={tag} className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm ${
+                    isDarkMode ? 'bg-purple-500/20 text-purple-300' : 'bg-purple-100 text-purple-800'
+                  }`}>
+                    <Tag className="w-3 h-3" />
+                    {tag}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
