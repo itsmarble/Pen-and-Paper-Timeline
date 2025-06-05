@@ -236,6 +236,34 @@ const Timeline = () => {
     return () => handler.cancel();
   }, [searchTerm]);
 
+  // Get all available tags from the optimized collection
+  const allTags = useMemo(() => {
+    return eventCollection.getAllTags();
+  }, [eventCollection]);
+
+  // Event-Status bestimmen using optimized event methods
+  const getEventStatus = (event) => {
+    try {
+      // Ensure we have an OptimizedEvent instance
+      let optimizedEvent = event;
+      if (!(event instanceof OptimizedEvent)) {
+        optimizedEvent = new OptimizedEvent(event);
+      }
+      // Use optimized event methods
+      const isActive = optimizedEvent.isActiveAt(currentGameTime);
+      if (isActive) {
+        return 'current';
+      }
+      const startDateTime = optimizedEvent.getStartDateTime();
+      if (!startDateTime) return 'unknown';
+      const status = startDateTime > currentGameTime ? 'future' : 'past';
+      return status;
+    } catch (error) {
+      logger.error('Error determining event status:', error, event);
+      return 'unknown';
+    }
+  };
+
   // Enhanced search and filtering using optimized event collection
   const filteredAndSortedEventsWithScores = useMemo(() => {
     // Use the advanced search with detailed options
@@ -300,38 +328,6 @@ const Timeline = () => {
       totalUniqueTerms: termSet.size
     };
   }, [eventCollection]);
-
-  // Get all available tags from the optimized collection
-  const allTags = useMemo(() => {
-    return eventCollection.getAllTags();
-  }, [eventCollection]);
-
-  // Event-Status bestimmen using optimized event methods
-  const getEventStatus = (event) => {
-    try {
-      // Ensure we have an OptimizedEvent instance
-      let optimizedEvent = event;
-      if (!(event instanceof OptimizedEvent)) {
-        optimizedEvent = new OptimizedEvent(event);
-      }
-      
-      // Use optimized event methods
-      const isActive = optimizedEvent.isActiveAt(currentGameTime);
-      if (isActive) {
-        return 'current';
-      }
-      
-      const startDateTime = optimizedEvent.getStartDateTime();
-      if (!startDateTime) return 'unknown';
-      
-      const status = startDateTime > currentGameTime ? 'future' : 'past';
-      
-      return status;
-    } catch (error) {
-      logger.error('Error determining event status:', error, event);
-      return 'unknown';
-    }
-  };
 
   // Notification System
   const showNotification = useCallback((message, type = 'success') => {
