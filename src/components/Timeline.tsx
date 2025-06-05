@@ -640,7 +640,7 @@ const Timeline = () => {
                 {/* Search Suggestions Dropdown */}
                 {searchSuggestions.length > 0 && searchTerm.length >= 2 && (
                   <div
-                    className={`absolute top-full left-0 right-0 mt-1 border rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto ${
+                    className={`absolute top-full left-0 right-0 mt-1 border rounded-xl shadow-lg z-[60] max-h-48 overflow-y-auto ${
                       isDarkMode
                         ? 'glass-dark'
                         : 'glass-light'
@@ -683,7 +683,7 @@ const Timeline = () => {
                 {/* Search Tips Tooltip */}
                 {searchTerm.length === 0 && isSearchFocused && (
                   <div
-                    className={`absolute top-full left-0 right-0 mt-1 p-3 border rounded-xl shadow-lg z-50 text-xs ${
+                    className={`absolute top-full left-0 right-0 mt-1 p-3 border rounded-xl shadow-lg z-[60] text-xs ${
                       isDarkMode
                         ? 'glass-dark text-gray-200'
                         : 'glass-light text-gray-800'
