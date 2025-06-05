@@ -753,7 +753,7 @@ const Timeline = () => {
                 {/* Search Suggestions Dropdown */}
                 {searchSuggestions.length > 0 && searchTerm.length >= 2 && (
                   <div
-                    className={`absolute top-full left-0 right-0 mt-1 border rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto ${
+                    className={`absolute top-full left-0 right-0 mt-1 border rounded-xl shadow-lg z-[60] max-h-48 overflow-y-auto ${
                       isDarkMode
                         ? 'bg-gray-800 border-gray-600'
                         : 'bg-white border-gray-200'
@@ -795,9 +795,9 @@ const Timeline = () => {
                 
                 {/* Freundlicher Platzhalter/Tooltip */}
                 {searchTerm.length === 0 && isSearchFocused && (
-                  <div className={`absolute top-full left-0 right-0 mt-1 p-3 border rounded-xl shadow-lg text-sm ${
-                    isDarkMode 
-                      ? 'bg-gray-800/95 border-gray-600 text-gray-200' 
+                  <div className={`absolute top-full left-0 right-0 mt-1 p-3 border rounded-xl shadow-lg text-sm z-[60] ${
+                    isDarkMode
+                      ? 'bg-gray-800/95 border-gray-600 text-gray-200'
                       : 'bg-blue-50/95 border-blue-200 text-blue-900'
                   }`}>
                     <div className="font-semibold mb-1">🔎 Suche nach Abenteuern, Orten, NPCs oder Tags!</div>
